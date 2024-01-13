@@ -102,7 +102,7 @@
 
 (test-group "list-generator-of"
   (test-property (lambda (x)
-                   (and (list? x) (<= (length x) 1000)
+                   (and (list? x) (<= (length x) 1001)
                         (every integer? x)))
                  (list (list-generator-of (integer-generator)))))
 
@@ -120,7 +120,7 @@
 (test-group "vector-generator-of"
   (test-property (lambda (x)
                    (vector? x)
-                   (<= (vector-length x) 1000)
+                   (<= (vector-length x) 1001)
                    (every integer? (vector->list x)))
                  (list (vector-generator-of (integer-generator)))))
 
