@@ -1,0 +1,12 @@
+* Scheme SRFI for property testing
+
+HTML SRFI document and sample implementation code.
+
+** Running the tests
+
+Gauche is the only supported implementation currently.
+This is because it is the only implementation that has the required SRFIs.
+
+#+begin_src shell
+gosh -I . property-test-tests.scm
+#+end_src

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)https://srfi.schemers.org/srfi-template.html -->
+<html lang="en"><!--
+SPDX-FileCopyrightText: 2024 Antero Mejr
+SPDX-License-Identifier: MIT
+--><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>SRFI 252: Property Testing</title>
+    <link href="https://srfi.schemers.org/favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="./SRFI 252 Property Testing_files/srfi.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"></head>
+  <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="./SRFI 252 Property Testing_files/srfi-logo.svg" alt="SRFI surfboard logo"></a>252: Property Testing</h1>
+
+<p>by Antero Mejr</p>
+
+<h2 id="status">Status</h2>
+
+<p style="color: red;">For editor's use only.  Please do not edit this section.</p>
+
+<p>??? the draft/final/withdrawn status of the SRFI, information on how
+to subscribe to its mailing list, and important dates in its history.
+The editor will add this section.</p>
+
+<h2 id="abstract">Abstract</h2>
+
+<p>This defines an extension of the
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>
+test suite API to support property testing. It uses
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>
+generators to generate test inputs, which allows for the creation of custom
+input generators. It uses
+<a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>
+as the source of random data, so that the generation of random test inputs can
+be made deterministic. For convenience, it also provides helper procedures to
+create test input generators for the types specified in R7RS-small. The
+interface to run property tests is similar to
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>,
+and a property testing-specific test runner is specified in order to display
+the results of the propertized tests.</p>
+
+<h2 id="issues">Issues</h2>
+
+<p>
+char-generator does not use an SRFI 14 char-set. This means, for implementations
+that use Unicode, char-generator may generate characters that are not valid
+Unicode code points. I think this is the correct behavior, since invalid code
+points fulfill the char? predicate.
+</p>
+
+<p>I wanted to use the test-name attribute in test-assert to store the iteration
+number as a string. But the test-assert macro only evaluates test-name once, so
+I abandoned that idea. The iteration number is made available inside the test
+runner's test-result-alist instead.</p>
+
+<p>Some procedures being tested may accept an eof-object as an argument. But
+generators use eof-object to indicate if they are exhausted. The user might
+naively create an eof-object generator, not knowing that it is equivalent to an
+empty generator. This shouldn't cause an error but may cause confusion.</p>
+
+<p>
+I would like to propose (scheme property-test) as an R7RS large alias name.
+</p>
+
+<h2 id="rationale">Rationale</h2>
+
+<p>
+Property testing is a software testing method where the programmer defines a
+property for a piece of code. A property is a predicate procedure that accepts
+one or more input arguments and returns True if the code under test exhibits
+correct behavior for the given inputs. Then, the property testing library
+generates pseudorandom ranges of inputs of the correct types, and applies them
+to the property. After running many tests, if application of inputs to the
+property ever returns False, then it can be assumed there a bug in the code,
+provided that the property itself is correct.
+</p>
+<p>
+Property testing can expose bugs that would not be found using a small number of
+hand-written test cases. In addition to generating random inputs, property
+testing libraries may also generate inputs that commonly cause incorrect
+behavior, such as <code>0</code> or <code>NaN</code>.
+</p>
+<p>
+Property testing provides a more rigorous alternative to traditional unit
+testing. In terms of the learning and effort required for use, it serves as a
+"middle ground" between basic unit tests and formal verification methods.
+Properties can be written as stricter specifiers of program behavior than
+individual test cases.
+</p>
+<p>
+Property testing was popularized by the QuickCheck library for Haskell, and has
+since spread to other languages. The following libraries were referenced in the
+creation of this document, in order of influence:
+</p>
+<p>
+Hypothesis, QuickCheck, Scheme-Check, and QuickCheck for Racket.
+</p>
+<p>
+Property testing requires a testing environment, generators, and random sources
+of data. These dependencies are provided by SRFI
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">64</a>,
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">158</a>, and
+<a href="https://srfi.schemers.org/srfi-194/srfi-194.html">194</a>, respectively.
+Users of those SRFIs will note the familiar interfaces presented here.
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> 
+is chosen to provide the testing environment over the simpler
+<a href="https://srfi.schemers.org/srfi-78/srfi-78.html">SRFI 78</a>.
+This is because property testing is often more complex than unit testing, so a
+more extensive testing environment is required.
+</p>
+<p>
+The Scheme-Check library provided an implementation of property testing for a
+limited set of Scheme implementations. However, it has been unmaintained for
+many years, and is not compatible with R7RS. Introducing a flexible property
+testing system as an SRFI will standardize a stable interface that can be
+used in multiple implementations.
+</p>
+<p>
+Property testing is also known as generative testing or property-based testing.
+This document uses the short name in order to have shorter identifiers.
+</p>
+
+<h2 id="specification">Specification</h2>
+
+<h3 id="Testing-procedures" class="subheading">Testing procedures</h3>
+
+<dl>
+<dt id="test_property"><code>(test-property</code><var> property generator-list [runs]</var><code>)</code></dt>
+<dd>
+<p>
+Run a property test.
+</p>
+<p>
+The <code>property</code> argument is a predicate procedure with an arity equal
+to the length of the <code>generator-list</code> argument. The
+<code>generator-list</code> argument must be a proper list containing
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>
+generators. The <code>generator-list</code> must be applied to the
+<code>property</code> procedure such that the value generated by the
+<code>car</code> position of the <code>generator-list</code> will be the first
+argument to <code>property</code>, and so on.
+</p>
+<p>
+The <code>runs</code> argument, if provided, must be a non-negative integer.
+This argument specifies how many times the property will be tested with newly
+generated inputs. If not provided, the implementation may choose how many
+times to run the test.
+</p>
+<p>
+The generators in <code>generator-list</code> must be infinite. It is an error
+for any of the generators to be exhausted.
+</p>
+<p>
+This procedure must be called inside a
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> test group.
+</p>
+<pre class="example">
+(define (my-square z) (square z))
+(define (my-square-property z) (= (sqrt (my-square z)) z))
+
+;; Test the property ten times.
+(test-property my-square-property (list (integer-generator)) 10)
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="test_property_expect_fail"><code>(test-property-expect-fail</code><var> property generator-list [runs]</var><code>)</code></dt>
+<dd>
+<p>
+Run a property test that is expected to fail for all inputs.
+This only affects test reporting, not test execution.
+</p>
+<pre class="example">
+(define (my-square z) (* z 2)) ; WRONG
+(define (my-square-property z) (= (sqrt (my-square z)) z))
+
+(test-property-expect-fail my-square-property (list (integer-generator)))
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="test_property_skip"><code>(test-property-skip</code><var> property generator-list [runs]</var><code>)</code></dt>
+<dd>
+<p>
+Do not run a property test. The active test-runner will skip the test, and no
+runs will be performed.
+</p>
+<pre class="example">
+(test-property-skip (lambda (x) #t) (list (integer-generator)))
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="test_property_error"><code>(test-property-error</code><var> property generator-list [runs]</var><code>)</code></dt>
+<dd>
+<p>
+Run a property test that is expected to raise an exception for all inputs.
+The exception raised may be of any type.
+</p>
+<pre class="example">
+(define (my-square z) (* z "foo")) ; will cause an error
+(define (my-square-property z) (= (sqrt (my-square z)) z))
+
+(test-property-error my-square-property (list (integer-generator)))
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="test_property_error_type"><code>(test-property-error-type</code><var> error-type property generator-list [runs]</var><code>)</code></dt>
+<dd>
+<p>
+Run a property test that is expected to raise a specific type of exception for
+all inputs. In order for the test to pass, the exception raised must match the
+error type specified by the error-type argument. The error type may be
+implementation-specific, or one specified in
+<a href="https://srfi.schemers.org/srfi-36/srfi-36.html">SRFI 36</a>.
+</p>
+<pre class="example">
+(define (cause-read-error str)
+  (read (open-input-string (string-append ")" str))))
+
+(define (cause-read-error-property str)
+  (symbol? (cause-read-error str)))
+
+(test-property-error-type
+  &read-error cause-read-error-property (list (string-generator)))
+</pre>
+</dd>
+</dl>
+
+<h3 id="Generator-procedures" class="subheading">Generator procedures</h3>
+
+<dl>
+<dt id="boolean_generator"><code>(boolean-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that returns <code>#t</code> and <code>#f</code>.
+The generator should return the sequence <code>(#t #f)</code> first, then a
+uniformly random distribution of <code>#t</code> and <code>#f</code>.
+</p>
+<pre class="example">
+(define bool-gen (boolean-generator))
+
+(bool-gen) ; => #t
+(bool-gen) ; => #f
+(bool-gen) ; => #t or #f
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="bytevector_generator"><code>(bytevector-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that returns objects that fulfill the
+<code>bytevector?</code> predicate.
+The generator should return an empty bytevector first, then a series of
+bytevectors with uniformly randomly distributed contents and sizes.
+</p>
+<pre class="example">
+(define bytevector-gen (bytevector-generator))
+
+(bytevector-gen) ; => #u8()
+(bytevector-gen) ; => #u8(...)
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="char_generator"><code>(char-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that returns objects that fulfill the
+<code>char?</code> predicate.
+The generator should return the character <code>#\null</code> first, then a
+uniformly random distribution of characters.
+</p>
+<pre class="example">
+(define char-gen (char-generator))
+
+(char-gen) ; => #\null
+(char-gen) ; => #\something
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="complex_generator"><code>(complex-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that returns objects that fulfill the
+<code>complex?</code> predicate.
+The real and imaginary parts of the complex numbers may be exact or inexact.
+The generator should return the sequence
+<pre>
+(0.0+0.0i 0+0i -0.0-0.0i -0-0i 1.0+1.0i 1.1+1.1i -1.0-1.0i -1.1-1.1i
+ +inf.0+inf.0i -inf.0-inf.0i +nan.0+nan.0i -nan.0-nan.0i)
+</pre>
+first, then a uniformly random distribution of complex numbers. Elements of that
+sequence may be omitted if they are not valid in an implementation.
+</p>
+<pre class="example">
+(define complex-gen (complex-generator))
+
+(complex-gen) ; => 0.0+0.0i
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="exact_generator"><code>(exact-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that returns objects that fulfill the
+<code>exact?</code> predicate.
+The generator should return the sequence
+<code>(0 -0 1 -1)</code> first, then a uniformly random distribution of exact
+numbers. Elements of that sequence may be omitted if they are not included in
+the implementation.
+</p>
+<pre class="example">
+(define exact-gen (exact-generator))
+
+(exact-gen) ; => 0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="exact_complex_generator"><code>(exact-complex-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>complex?</code> predicate.
+The real and imaginary parts of the complex numbers must be exact.
+The generator should return the sequence
+<code>(0+0i -0-0i 1+1i -1-1i)</code> first, then a uniformly random distribution
+of exact complex numbers. Elements of that sequence may be omitted if they are
+not included in the implementation.
+</p>
+<pre class="example">
+(define exact-complex-gen (exact-complex-generator))
+
+(exact-complex-gen) ; => 0+0i
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="inexact_complex_generator"><code>(inexact-complex-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>complex?</code> predicate.
+The real and imaginary parts of the complex numbers must be inexact.
+The generator should return the sequence
+<pre>
+(0.0+0.0i -0.0-0.0i 1.1+1.1i -1.1-1.1i +inf.0+inf.0i -inf.0-inf.0i
+ +nan.0+nan.0i -nan.0-nan.0i)
+</pre>
+first, then a uniformly random distribution of inexact complex numbers. Elements
+of that sequence may be omitted if they are not included in the implementation.
+</p>
+<pre class="example">
+(define inexact-complex-gen (inexact-complex-generator))
+
+(inexact-complex-gen) ; => 0.0+0.0i
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="inexact_generator"><code>(inexact-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>inexact?</code> predicate.
+The generator should return the sequence
+<pre>
+(0.0 -0.0 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
+</pre>
+first, then a uniformly random distribution of inexact complex numbers. Elements
+of that sequence may be omitted if they are not included in the implementation.
+</p>
+<pre class="example">
+(define inexact-gen (inexact-generator))
+
+(inexact-gen) ; => 0.0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="integer_generator"><code>(integer-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>integer?</code> predicate.
+The generator should return the sequence
+<code>(0 -0 1 -1)</code> first, then a uniformly random distribution of
+integers. Elements of that sequence may be omitted if they are not included in
+the implementation.
+</p>
+<pre class="example">
+(define integer-gen (integer-generator))
+
+(integer-gen) ; => 0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="number_generator"><code>(number-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>number?</code> predicate.
+The generator should return the sequence
+<pre>
+(0.0 -0.0 0 -0 1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
+</pre>
+first, then a uniformly random distribution of numbers. Elements of that
+sequence may be omitted if they are not included in the implementation.
+</p>
+<pre class="example">
+(define number-gen (number-generator))
+
+(number-gen) ; => 0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="rational_generator"><code>(rational-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>rational?</code> predicate.
+The generator should return the sequence
+<pre>
+(0 -0 0.0 -0.0 -1.1 1.1 -1 1)
+</pre>
+first, then a uniformly random distribution of rational numbers. Elements of
+that sequence may be omitted if they are not included in the implementation.
+</p>
+<pre class="example">
+(define rational-gen (rational-generator))
+
+(rational-gen) ; => 0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="real_generator"><code>(real-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates objects that fulfill the
+<code>real?</code> predicate.
+The generator should return the sequence
+<pre>
+(0.0 -0.0 0 -0 1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
+</pre>
+first, then a uniformly random distribution of real numbers. Elements of that
+sequence may be omitted if they are not included in the implementation.
+</p>
+<pre class="example">
+(define real-gen (real-generator))
+
+(real-gen) ; => 0
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="string_generator"><code>(string-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates strings.
+The generator should return the sequence
+<code>("" "\0")</code> first,
+then a series of strings with uniformly randomly distributed contents and sizes.
+</p>
+<pre class="example">
+(define string-gen (string-generator))
+
+(string-gen) ; => ""
+(string-gen) ; => "\0"
+(string-gen) ; => "..."
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="symbol_generator"><code>(symbol-generator)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates symbols.
+</p>
+<pre class="example">
+(define symbol-gen (symbol-generator))
+
+(symbol-gen) ; => 'something
+</pre>
+</dd>
+</dl>
+
+<h3 id="Special-generator-procedures" class="subheading">Special generator procedures</h3>
+
+<dl>
+<dt id="list_generator_of"><code>(list-generator-of</code><var> subgenerator [max-length]</var><code>)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates homogenous lists. The contents of
+the list are values generated by <code>subgenerator</code>.
+The generator should return the empty list first.
+Then it should return lists containing values generated by
+<code>subgenerator</code>, with a length uniformly randomly distributed between
+1 and <code>max-length</code>, if specified. If the <code>max-length</code>
+argument is not specified, the implementation may select the size range.
+</p>
+<pre class="example">
+(define list-gen (list-generator-of (integer-generator)))
+
+(list-gen) ; => '()
+(list-gen) ; (0 -0 1 -1 ...)
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="pair_generator_of"><code>(pair-generator-of</code><var> subgenerator [subgenerator2]</var><code>)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates pairs. The contents of
+the pairs are values generated by the <code>subgenerator</code>,
+and if specified, <code>subgenerator2</code> arguments. If both subgenerators
+are specified, <code>subgenerator</code> will populate the <code>car</code>,
+while <code>subgenerator2</code> will populate the <code>cdr</code>.
+</p>
+<pre class="example">
+(define pair-gen (pair-generator-of (integer-generator boolean-generator)))
+
+(pair-gen) ; => '(0 . #t)
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="procedure_generator_of"><code>(procedure-generator-of</code><var> subgenerator</var><code>)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates procedures. The return of
+those procedures are values generated by the <code>subgenerator</code> argument.
+The procedures generated should be variadic.
+</p>
+<pre class="example">
+(define proc-gen (procedure-generator-of (boolean-generator)))
+
+((proc-gen) 1)           ; => #t
+((proc-gen) 'foo 'bar)   ; => #f
+((proc-gen) "x" "y" "z") ; => #t or #f
+</pre>
+</dd>
+</dl>
+
+<dl>
+<dt id="vector_generator_of"><code>(vector-generator-of</code><var> subgenerator [max-length]</var><code>)</code></dt>
+<dd>
+<p>
+Create an infinite generator that generates homogenous vectors. The contents of
+the vector are values generated by <code>subgenerator</code>.
+The generator should return the empty vector first.
+Then it should return vectors containing values generated by
+<code>subgenerator</code>, with a length uniformly randomly distributed between
+1 and <code>max-length</code>, if specified. If the <code>max-length</code>
+argument is not specified, the implementation may select the size range.
+</p>
+<pre class="example">
+(define vector-gen (vector-generator-of (boolean-generator)))
+
+(vector-gen) ; => #()
+(vector-gen) ; => #(#t #f ...)
+</pre>
+</dd>
+</dl>
+
+<h3 id="Test-runner" class="subheading">Test runner</h3>
+
+<dl>
+<dt id="vector_generator_of"><code>(property-test-runner)</code></dt>
+<dd>
+<p>
+Creates a
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>
+test-runner. The test runner should be able to display or write the results of
+all the runs of a property-based test.
+</p>
+</dd>
+</dl>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>
+A conformant sample implementation is provided. It depends on R7RS-small,
+<a href="https://srfi.schemers.org/srfi-1/srfi-1.html">SRFI 1</a>,
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>,
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>, and
+<a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>.
+However, there are values in the implementation that may need to be adjusted.
+The size of the generated test inputs, and the number of cases to run, should be
+tuned depending on the performance characteristics of the implementation. These
+tunable values are denoted by comments in the code.
+</p>
+
+<p>
+The <code>property-test-runner</code> provided by the sample implementation is
+the same as the <code>test-runner-simple</code> from
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>.
+However, implementations should define a property testing-specific runner that
+displays results in an organized manner.
+<p>
+
+<p>
+The sample implementation is available 
+<a href="https://github.com/a2378/srfi-property-testing">here</a>.
+</p>
+
+<a href="https://srfi.schemers.org/srfi-minus-???-sample.scm">Source for the sample implementation.</a>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>
+Thank you to Shiro Kawai for the initial review of the implementation.
+</p>
+
+<h2 id="copyright">Copyright</h2>
+<p>© 2024 Antero Mejr.</p>
+
+<p>
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:</p>
+
+<p>
+  The above copyright notice and this permission notice (including the
+  next paragraph) shall be included in all copies or substantial
+  portions of the Software.</p>
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.</p>
+
+  <hr>
+  <address>Editor: <a href="mailto:srfi-editors+at+srfi+dot+schemers+dot+org">Arthur A. Gleckler</a></address></body></html>
