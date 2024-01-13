@@ -234,6 +234,13 @@ implementation-specific, or one specified in
 
 <h3 id="Generator-procedures" class="subheading">Generator procedures</h3>
 
+<p>
+The generator and special generator procedures in this SRFI must be implemented
+using <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>.
+That way, the <code>current-random-source</code> parameter can be configured to
+facilitate deterministic generation of property test inputs.
+</p>
+
 <dl>
 <dt id="boolean_generator"><code>(boolean-generator)</code></dt>
 <dd>
