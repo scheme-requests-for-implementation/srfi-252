@@ -35,9 +35,9 @@ input generators. It uses
 as the source of random data, so that the generation of random test inputs can
 be made deterministic. For convenience, it also provides helper procedures to
 create test input generators for the types specified in R7RS-small. The
-interface to run property tests is similar to
+interface to run property tests is similar to that of
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>,
-and a property testing-specific test runner is specified in order to display
+and a property-testing-specific test runner is specified in order to display
 the results of the propertized tests.</p>
 
 <h2 id="issues">Issues</h2>
@@ -72,7 +72,7 @@ one or more input arguments and returns True if the code under test exhibits
 correct behavior for the given inputs. Then, the property testing library
 generates pseudorandom ranges of inputs of the correct types, and applies them
 to the property. After running many tests, if application of inputs to the
-property ever returns False, then it can be assumed there a bug in the code,
+property ever returns False, then it can be assumed that there is a bug in the code,
 provided that the property itself is correct.
 </p>
 <p>
@@ -84,7 +84,7 @@ behavior, such as <code>0</code> or <code>NaN</code>.
 <p>
 Property testing provides a more rigorous alternative to traditional unit
 testing. In terms of the learning and effort required for use, it serves as a
-"middle ground" between unit tests and formal verification methods.
+middle ground between unit tests and formal verification methods.
 Properties can be written as stricter specifiers of program behavior than
 individual test cases.
 </p>
@@ -103,10 +103,10 @@ of data. These dependencies are provided by SRFI
 <a href="https://srfi.schemers.org/srfi-158/srfi-158.html">158</a>, and
 <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">194</a>, respectively.
 Users of those SRFIs will note the familiar interfaces presented here.
-<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> 
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>
 is chosen to provide the testing environment over the simpler
 <a href="https://srfi.schemers.org/srfi-78/srfi-78.html">SRFI 78</a>.
-This is because property testing is often more complex than unit testing, so a
+This is because property testing is often more complex than unit testing so a
 more extensive testing environment is required.
 </p>
 <p>
@@ -640,7 +640,7 @@ tunable values are denoted by comments in the code.
 The <code>property-test-runner</code> provided by the sample implementation is
 the same as the <code>test-runner-simple</code> from
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>.
-However, implementations should define a property testing-specific runner that
+However, implementations should define a property-testing-specific runner that
 displays results in a well-organized fashion.
 <p>
 
