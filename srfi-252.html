@@ -43,7 +43,7 @@ the results of the propertized tests.</p>
 <h2 id="issues">Issues</h2>
 
 <p>
-char-generator does not use an SRFI 14 char-set. This means, for implementations
+char-generator does not use an <a href="https://srfi.schemers.org/srfi-14/srfi-14.html">SRFI 14</a> char-set. This means, for implementations
 that use Unicode, char-generator may generate characters that are not valid
 Unicode code points. I think this is the correct behavior, since invalid code
 points fulfill the char? predicate.
