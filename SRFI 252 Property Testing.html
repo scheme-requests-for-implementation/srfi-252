@@ -155,7 +155,7 @@ This procedure must be called inside a
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> test group.
 </p>
 <pre class="example">
-(define (my-square z) (square z))
+(define (my-square z) (* z z))
 (define (my-square-property z) (= (sqrt (my-square z)) z))
 
 ;; Test the property ten times.
