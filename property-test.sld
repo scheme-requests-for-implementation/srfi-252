@@ -6,7 +6,6 @@
   (import (scheme base)
           (scheme case-lambda)
           (scheme complex)
-          (scheme write)
           (only (srfi 1) iota)
           (srfi 64)
           (srfi 158)
