@@ -304,11 +304,12 @@ Create an infinite generator that returns objects that fulfill the
 The real and imaginary parts of the complex numbers may be exact or inexact.
 The generator should return the sequence
 <pre>
-(0.0+0.0i 0+0i -0.0-0.0i -0-0i 1.0+1.0i 1.1+1.1i -1.0-1.0i -1.1-1.1i
+(0.0+0.0i 0+0i -0.0-0.0i -0-0i 1+1i 1.1+1.1i -1-1i -1.1-1.1i
  +inf.0+inf.0i -inf.0-inf.0i +nan.0+nan.0i -nan.0-nan.0i)
 </pre>
-first, then a uniformly random distribution of complex numbers. Elements of that
-sequence may be omitted if they are not valid in an implementation.
+first, then a uniformly random distribution of complex numbers. Elements of the
+above sequence may be omitted if they are not distinguished in the
+implementation.
 </p>
 <pre class="example">
 (define complex-gen (complex-generator))
@@ -326,8 +327,8 @@ Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> predicate.
 The generator should return the sequence
 <code>(0 -0 1 -1)</code> first, then a uniformly random distribution of exact
-numbers. Elements of that sequence may be omitted if they are not included in
-the implementation.
+numbers. Elements of the above sequence may be omitted if they are not
+distinguished in the implementation.
 </p>
 <pre class="example">
 (define exact-gen (exact-generator))
@@ -341,13 +342,13 @@ the implementation.
 <dt id="exact_complex_generator"><code>(exact-complex-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>complex?</code> predicate.
 The real and imaginary parts of the complex numbers must be exact.
 The generator should return the sequence
 <code>(0+0i -0-0i 1+1i -1-1i)</code> first, then a uniformly random distribution
-of exact complex numbers. Elements of that sequence may be omitted if they are
-not included in the implementation.
+of exact complex numbers. Elements of the above sequence may be omitted if they
+are not distinguished in the implementation.
 </p>
 <pre class="example">
 (define exact-complex-gen (exact-complex-generator))
@@ -361,7 +362,7 @@ not included in the implementation.
 <dt id="inexact_complex_generator"><code>(inexact-complex-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>complex?</code> predicate.
 The real and imaginary parts of the complex numbers must be inexact.
 The generator should return the sequence
@@ -370,7 +371,8 @@ The generator should return the sequence
  +nan.0+nan.0i -nan.0-nan.0i)
 </pre>
 first, then a uniformly random distribution of inexact complex numbers. Elements
-of that sequence may be omitted if they are not included in the implementation.
+of the above sequence may be omitted if they are not distinguished in the
+implementation.
 </p>
 <pre class="example">
 (define inexact-complex-gen (inexact-complex-generator))
@@ -384,14 +386,15 @@ of that sequence may be omitted if they are not included in the implementation.
 <dt id="inexact_generator"><code>(inexact-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>inexact?</code> predicate.
 The generator should return the sequence
 <pre>
 (0.0 -0.0 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
 </pre>
 first, then a uniformly random distribution of inexact complex numbers. Elements
-of that sequence may be omitted if they are not included in the implementation.
+of the above sequence may be omitted if they are not distinguished in the
+implementation.
 </p>
 <pre class="example">
 (define inexact-gen (inexact-generator))
@@ -405,12 +408,12 @@ of that sequence may be omitted if they are not included in the implementation.
 <dt id="integer_generator"><code>(integer-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>integer?</code> predicate.
 The generator should return the sequence
 <code>(0 -0 1 -1)</code> first, then a uniformly random distribution of
-integers. Elements of that sequence may be omitted if they are not included in
-the implementation.
+integers. Elements of the above sequence may be omitted if they are not
+distinguished in the implementation.
 </p>
 <pre class="example">
 (define integer-gen (integer-generator))
@@ -424,14 +427,14 @@ the implementation.
 <dt id="number_generator"><code>(number-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>number?</code> predicate.
 The generator should return the sequence
 <pre>
 (0.0 -0.0 0 -0 1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
 </pre>
-first, then a uniformly random distribution of numbers. Elements of that
-sequence may be omitted if they are not included in the implementation.
+first, then a uniformly random distribution of numbers. Elements of the above
+sequence may be omitted if they are not distinguished in the implementation.
 </p>
 <pre class="example">
 (define number-gen (number-generator))
@@ -445,14 +448,15 @@ sequence may be omitted if they are not included in the implementation.
 <dt id="rational_generator"><code>(rational-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>rational?</code> predicate.
 The generator should return the sequence
 <pre>
 (0 -0 0.0 -0.0 -1.1 1.1 -1 1)
 </pre>
-first, then a uniformly random distribution of rational numbers. Elements of
-that sequence may be omitted if they are not included in the implementation.
+first, then a uniformly random distribution of rational numbers. Elements of the
+above sequence may be omitted if they are not distinguished in the
+implementation.
 </p>
 <pre class="example">
 (define rational-gen (rational-generator))
@@ -466,14 +470,15 @@ that sequence may be omitted if they are not included in the implementation.
 <dt id="real_generator"><code>(real-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates objects that fulfill the
+Create an infinite generator that returns objects that fulfill the
 <code>real?</code> predicate.
 The generator should return the sequence
 <pre>
 (0.0 -0.0 0 -0 1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0)
 </pre>
-first, then a uniformly random distribution of real numbers. Elements of that
-sequence may be omitted if they are not included in the implementation.
+first, then a uniformly random distribution of real numbers. Elements of the
+above sequence may be omitted if they are not distinguished in the
+implementation.
 </p>
 <pre class="example">
 (define real-gen (real-generator))
@@ -487,7 +492,7 @@ sequence may be omitted if they are not included in the implementation.
 <dt id="string_generator"><code>(string-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates strings.
+Create an infinite generator that returns strings.
 The generator should return the sequence
 <code>("" "\0")</code> first,
 then a series of strings with uniformly randomly distributed contents and sizes.
@@ -506,7 +511,7 @@ then a series of strings with uniformly randomly distributed contents and sizes.
 <dt id="symbol_generator"><code>(symbol-generator)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates symbols.
+Create an infinite generator that returns symbols.
 </p>
 <pre class="example">
 (define symbol-gen (symbol-generator))
@@ -522,7 +527,7 @@ Create an infinite generator that generates symbols.
 <dt id="list_generator_of"><code>(list-generator-of</code><var> subgenerator [max-length]</var><code>)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates homogenous lists. The contents of
+Create an infinite generator that returns homogenous lists. The contents of
 the list are values generated by <code>subgenerator</code>.
 The generator should return the empty list first.
 Then it should return lists containing values generated by
@@ -543,7 +548,7 @@ argument is not specified, the implementation may select the size range.
 <dt id="pair_generator_of"><code>(pair-generator-of</code><var> subgenerator [subgenerator2]</var><code>)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates pairs. The contents of
+Create an infinite generator that returns pairs. The contents of
 the pairs are values generated by the <code>subgenerator</code>,
 and if specified, <code>subgenerator2</code> arguments. If both subgenerators
 are specified, <code>subgenerator</code> will populate the <code>car</code>,
@@ -561,7 +566,7 @@ while <code>subgenerator2</code> will populate the <code>cdr</code>.
 <dt id="procedure_generator_of"><code>(procedure-generator-of</code><var> subgenerator</var><code>)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates procedures. The return of
+Create an infinite generator that returns procedures. The returns of
 those procedures are values generated by the <code>subgenerator</code> argument.
 The procedures generated should be variadic.
 </p>
@@ -579,7 +584,7 @@ The procedures generated should be variadic.
 <dt id="vector_generator_of"><code>(vector-generator-of</code><var> subgenerator [max-length]</var><code>)</code></dt>
 <dd>
 <p>
-Create an infinite generator that generates homogenous vectors. The contents of
+Create an infinite generator that returns homogenous vectors. The contents of
 the vector are values generated by <code>subgenerator</code>.
 The generator should return the empty vector first.
 Then it should return vectors containing values generated by
