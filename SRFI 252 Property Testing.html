@@ -124,6 +124,11 @@ This document uses the short name in order to have shorter identifiers.
 
 <h3 id="Testing-procedures" class="subheading">Testing procedures</h3>
 
+<p>
+The testing procedures below must be called inside a
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> test group.
+</p>
+
 <dl>
 <dt id="test_property"><code>(test-property</code><var> property generator-list [runs]</var><code>)</code></dt>
 <dd>
@@ -149,10 +154,6 @@ times to run the test.
 <p>
 The generators in <code>generator-list</code> must be infinite. It is an error
 for any of the generators to be exhausted.
-</p>
-<p>
-This procedure must be called inside a
-<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> test group.
 </p>
 <pre class="example">
 (define (my-square z) (* z z))
