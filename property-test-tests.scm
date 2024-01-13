@@ -6,8 +6,10 @@
         (scheme complex)
         (scheme list)
         (scheme read)
+        (srfi 18)
         (srfi 36)
         (srfi 64)
+        (srfi 158)
         (property-test))
 
 (test-begin "property-test")
@@ -19,6 +21,10 @@
 (define (error-three-property x) (string-append 1 2))
 (define (make-read-error x) (read (open-input-string (string-append ")" x))))
 (define (make-read-error-property x) (symbol? (make-read-error x)))
+(define (slow-boolean-generator) (gmap (lambda (x)
+                                         (thread-sleep! 100000)
+                                         x)
+                                       (boolean-generator)))
 
 (test-group "test-property"
   (test-property three-property (list (integer-generator)))
@@ -30,8 +36,8 @@
   (test-property-expect-fail wrong-three-property (list (integer-generator)) 10))
 
 (test-group "test-property-skip" ; shouldn't run
-  (test-property-skip error-three-property (list (integer-generator)))
-  (test-property-skip error-three-property (list (integer-generator)) 10))
+  (test-property-skip error-three-property (list (slow-boolean-generator)))
+  (test-property-skip error-three-property (list (slow-boolean-generator)) 10))
 
 (test-group "test-property-error"
   (test-property-error error-three-property (list (integer-generator)))
@@ -40,6 +46,11 @@
 (test-group "test-property-error-type"
   (test-property-error-type &read-error make-read-error-property
                             (list (string-generator))))
+
+(test-group "test-property_with-2-arguments"
+  (test-property (lambda (x y)
+                   (and (boolean? x) (integer? y)))
+                 (list (boolean-generator) (integer-generator))))
 
 (test-group "boolean-generator"
   (test-property boolean? (list (boolean-generator))))

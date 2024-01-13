@@ -173,22 +173,29 @@
                                   runner)))
 
     (define (prop-test property generators runner runs)
-      (for-each (lambda (n)
-                  (let ((args (map (lambda (gen) (gen)) generators)))
-                    (test-result-set! runner 'property-test-arguments args)
-                    (test-result-set! runner 'property-test-iteration n)
-                    (test-result-set! runner 'property-test-iterations runs)
-                    (test-assert (apply property args))))
-                (iota runs)))
+      (for-each
+       (lambda (n)
+         (test-assert
+             (apply property
+                    (let ((args (map (lambda (gen) (gen)) generators)))
+                      (test-result-set! runner 'property-test-arguments args)
+                      (test-result-set! runner 'property-test-iteration (+ n 1))
+                      (test-result-set! runner 'property-test-iterations runs)
+                      args))))
+       (iota runs)))
 
     (define (prop-test-error type property generators runner runs)
-      (for-each (lambda (n)
-                  (let ((args (map (lambda (gen) (gen)) generators)))
-                    (test-result-set! runner 'property-test-arguments args)
-                    (test-result-set! runner 'property-test-iteration n)
-                    (test-result-set! runner 'property-test-iterations runs)
-                    (test-error type (apply property args))))
-                (iota runs)))
+      (for-each
+       (lambda (n)
+         (test-error
+          type
+          (apply property
+                 (let ((args (map (lambda (gen) (gen)) generators)))
+                   (test-result-set! runner 'property-test-arguments args)
+                   (test-result-set! runner 'property-test-iteration (+ n 1))
+                   (test-result-set! runner 'property-test-iterations runs)
+                   args))))
+       (iota runs)))
 
     (define test-property-error
       (case-lambda
