@@ -173,7 +173,7 @@ Run a property test that is expected to fail for all inputs.
 This only affects test reporting, not test execution.
 </p>
 <pre class="example">
-(define (my-square z) (* z 2)) ; WRONG
+(define (my-square z) (+ z 1)) ; Incorrect for all inputs
 (define (my-square-property z) (= (sqrt (my-square z)) z))
 
 (test-property-expect-fail my-square-property (list (integer-generator)))
