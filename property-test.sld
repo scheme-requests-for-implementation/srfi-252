@@ -145,12 +145,16 @@
 
     (define vector-generator-of
       (case-lambda
-        ((gen) (gmap (lambda (len)
-                       (generator->vector gen len))
-                     (make-random-integer-generator 0 max-size)))
-        ((gen max-length) (gmap (lambda (len)
-                                  (generator->vector gen len))
-                                (make-random-integer-generator 0 max-length)))))
+        ((gen)
+         (gcons* (vector)
+                 (gmap (lambda (len)
+                         (generator->vector gen len))
+                       (make-random-integer-generator 0 max-size))))
+        ((gen max-length)
+         (gcons* (vector)
+                 (gmap (lambda (len)
+                         (generator->vector gen len))
+                       (make-random-integer-generator 0 max-length))))))
 
     ;; Runner
 
