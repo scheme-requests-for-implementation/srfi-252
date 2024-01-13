@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <!-- SPDX-FileCopyrightText: 2024 Antero Mejr -->
+      <!-- SPDX-License-Identifier: MIT -->
+      <title>Property Testing</title>
+      <link href="/admin.css" rel="stylesheet">
+      <link href="/list.css" rel="stylesheet">
+      <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
+      <script crossorigin="anonymous" integrity="sha384-Ra6zh6uYMmH5ydwCqqMoykyf1T/+ZcnOQfFPhDrp2kI4OIxadnhsvvA2vv9A7xYv" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script></head>
+    <body>
+      <h1>SRFI 252: Property Testing</h1>
+      <p class="authors">by Antero Mejr</p>
+      <p class="based-on"></p>
+      <p class="status">status: <em>draft</em> (2024-01-13)</p>
+      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=testing">Testing</a></p><span class="see-also">See also <a href="/srfi-64/">SRFI 64: A Scheme API for test suites</a>, <a href="/srfi-158/">SRFI 158: Generators and Accumulators</a>, and <a href="/srfi-194/">SRFI 194: Random data generators</a>.</span>
+      <ul class="info">
+        <li><a href="srfi-252.html">The SRFI Document</a></li>
+        <li><a href="https://srfi-email.schemers.org/srfi-252/">Discussion Archive</a></li>
+        <li><a href="https://github.com/scheme-requests-for-implementation/srfi-252">Git repo (on GitHub)</a></li>
+        <li><a href="mailto:srfi-252@srfi.schemers.org">srfi-252@<span class="antispam">nospam</span>srfi.schemers.org (subscribers only)</a></li>
+        <li><span class="firefox-column-workaround">
+            <form method="POST" action="https://www.simplelists.com/subscribe.php">
+              <div class="title">Subscribe to srfi-252 mailing list</div><input name="email" placeholder="email address" tabindex="1" type="email"><input name="name" placeholder="full name" tabindex="2" type="text">
+              <p><input id="sub-digest" name="digest" tabindex="3" type="checkbox" value="digest"><label for="sub-digest">daily digest?</label></p><input class="submit" name="submit" tabindex="4" type="submit" value="Subscribe to srfi-252"><input type="hidden" name="action" value="subscribe"><input type="hidden" name="list" value="srfi-252@srfi.schemers.org"></form></span></li>
+        <li><span class="firefox-column-workaround">
+            <form method="POST" action="https://www.simplelists.com/subscribe.php">
+              <div class="title">Unsubscribe from srfi-252 mailing list</div><input name="email" placeholder="email address" tabindex="5" type="email"><input class="submit" name="submit" tabindex="6" type="submit" value="Unsubscribe from srfi-252"><input type="hidden" name="action" value="unsubscribe"><input name="list" type="hidden" value="srfi-252@srfi.schemers.org"></form></span></li></ul>
+      <h2>Abstract</h2><p>This defines an extension of the <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a> test suite API to support property testing. It uses <a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a> generators to generate test inputs, which allows for the creation of custom input generators. It uses <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a> as the source of random data, so that the generation of random test inputs can be made deterministic. For convenience, it also provides helper procedures to create test input generators for the types specified in R7RS-small. The interface to run property tests is similar to that of <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>, and a property-testing-specific test runner is specified in order to display the results of the propertized tests.</p></body></html>
