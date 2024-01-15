@@ -118,7 +118,7 @@
                (make-random-integer-generator (- max-int) max-int)))
 
     (define (exact-complex-generator)
-      (gappend (gfilter complex? special-number)
+      (gappend (gfilter exact-complex? special-number)
                (gmap make-rectangular
                      (make-random-integer-generator (- max-int) max-int)
                      (make-random-integer-generator (- max-int) max-int))))
