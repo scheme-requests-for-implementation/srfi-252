@@ -26,7 +26,7 @@
   (import (scheme base)
           (scheme case-lambda)
           (scheme complex)
-          (only (srfi 1) iota)
+          (srfi 1)
           (srfi 64)
           (srfi 158)
           (srfi 194))
@@ -44,18 +44,52 @@
   (begin
 
     ;; Constants
-    ;; May be implementation-dependent, but should be reasonably high numbers.
 
+    ;; These values may be implementation-dependent, but should be reasonably
+    ;; high numbers.
     ;; Number of property tests to run by default.
     (define default-runs 100)
-    ;; Maximum number size for random generators.
+    ;; Maximum absolute value of a number for random generators.
     (define max-int 1000000000000000001)
     ;; Maximum size for random bytevector/vector/lists generators.
     (define max-size 1001)
     ;; Change to 127 for implementations that only support ASCII.
     (define max-char 1114111) ;unicode max
 
+    ;; Omit values that are not distinguished in the implementation.
+    (cond-expand
+     (gauche ; Not distinguished: -0, -0.0, exact-complex
+      (define special-number '(;; exact
+                               0 1 -1
+                               ;; inexact
+                               0.0 0.5 -0.5 1.0 -1.0
+                               ;; inexact-complex
+                               0.0+1.0i 0.0-1.0i
+                               0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                               1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                               ;; other
+                               +inf.0 -inf.0 +nan.0 -nan.0)))
+     (else
+      (define special-number '(;; integer
+                               0 -0 1 -1
+                               ;; inexact
+                               0.0 -0.0 0.5 -0.5 1.0 -1.0
+                               ;; exact-complex
+                               0+i 0-i 1+i 1-i -1+i -1-i
+                               ;; inexact-complex
+                               0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
+                               0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                               1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                               ;; other
+                               +inf.0 -inf.0 +nan.0 -nan.0))))
+
     ;; Generator procedures
+
+    (define (inexact-complex? x)
+      (and (complex? x) (inexact? (imag-part x)) (inexact? (real-part x))))
+
+    (define (exact-complex? x)
+      (and (complex? x) (exact? (imag-part x)) (exact? (real-part x))))
 
     (define (boolean-generator)
       (gcons* #t #f (make-random-boolean-generator)))
@@ -69,61 +103,52 @@
 
     (define (char-generator)
       (gcons* #\null
-              (gmap integer->char (make-random-integer-generator 0 max-char))))
+              (gmap integer->char
+                    (gfilter (lambda (x)
+                               (or (< x #xd800) (> x #xdfff)))
+                             (make-random-integer-generator 0 max-char)))))
 
     (define (complex-generator)
-      (gcons* (make-rectangular 0.0 0.0)
-              (make-rectangular 0 0)
-              (make-rectangular 1 1)
-              (make-rectangular 1.1 1.1)
-              (make-rectangular -1 -1)
-              (make-rectangular -1.1 -1.1)
-              (make-rectangular +inf.0 +inf.0)
-              (make-rectangular -inf.0 -inf.0)
-              (make-rectangular +nan.0 +nan.0)
-              ;; omit (-nan.0 -nan.0) as there is no significance in Gauche.
-              (make-random-rectangular-generator (- max-int) max-int
-                                                 (- max-int) max-int)))
+      (gappend (gfilter complex? special-number)
+               (make-random-rectangular-generator (- max-int) max-int
+                                                  (- max-int) max-int)))
 
     (define (exact-generator)
-      ;; Not including -0
-      (gcons* 0 1 -1 (make-random-integer-generator (- max-int) max-int)))
+      (gappend (gfilter exact? special-number)
+               (make-random-integer-generator (- max-int) max-int)))
 
     (define (exact-complex-generator)
-      (gcons* (make-rectangular 0 0)
-              (make-rectangular 1 1)
-              (make-rectangular -1 -1)
-              (gmap make-rectangular
-                    (make-random-integer-generator (- max-int) max-int)
-                    (make-random-integer-generator (- max-int) max-int))))
+      (gappend (gfilter complex? special-number)
+               (gmap make-rectangular
+                     (make-random-integer-generator (- max-int) max-int)
+                     (make-random-integer-generator (- max-int) max-int))))
 
     (define (inexact-complex-generator)
-      (gcons* (make-rectangular 0.0 0.0)
-              (make-rectangular 1.1 1.1)
-              (make-rectangular -1.1 -1.1)
-              (make-rectangular +inf.0 +inf.0)
-              (make-rectangular -inf.0 -inf.0)
-              (make-rectangular +nan.0 +nan.0)
-              ;; (make-rectangular -nan.0 -nan.0)
-              (make-random-rectangular-generator (- max-int) max-int
-                                                 (- max-int) max-int)))
+      (gappend (gfilter inexact-complex? special-number)
+               (make-random-rectangular-generator (- max-int) max-int
+                                                  (- max-int) max-int)))
 
     (define (inexact-generator)
-      ;; Not including -0.0 or -nan.0
-      (gcons* 0.0 1.1 -1.1 +inf.0 -inf.0 +nan.0
-       (make-random-real-generator (- max-int) max-int)))
+      (gappend (gfilter inexact? special-number)
+               (make-random-real-generator (- max-int) max-int)))
 
-    (define (integer-generator) (exact-generator))
+    (define (integer-generator)
+      (gappend (gfilter integer? special-number)
+               (make-random-integer-generator (- max-int) max-int)))
 
     (define (number-generator)
-      (gcons* 0.0 0  1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0
-              (inexact-generator)))
+      ;; TODO: May need to be modified for unusual implementation-specific
+      ;; number types, like Kawa's quaternion.
+      (gappend (apply generator special-number)
+               (complex-generator)))
 
     (define (rational-generator)
-      (gcons* 0 0.0 -1.1 1.1 -1 1
-              (make-random-real-generator (- max-int) max-int)))
+      (gappend (gfilter rational? special-number)
+               (make-random-real-generator (- max-int) max-int)))
 
-    (define (real-generator) (inexact-generator))
+    (define (real-generator)
+      (gappend (gfilter real? special-number)
+               (make-random-real-generator (- max-int) max-int)))
 
     (define (string-generator)
       (gcons* ""

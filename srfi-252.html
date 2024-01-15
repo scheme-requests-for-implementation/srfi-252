@@ -46,13 +46,6 @@ the results of the propertized tests.</p>
 
 <h2 id="issues">Issues</h2>
 
-<p>
-<code>char-generator</code> does not use an <a href="https://srfi.schemers.org/srfi-14/srfi-14.html">SRFI 14</a> char-set. This means, for implementations
-that use Unicode, <code>char-generator</code> may generate characters that are not valid
-Unicode code points. I think this is the correct behavior, since invalid code
-points fulfill the <code>char?</code> predicate.
-</p>
-
 <p>I wanted to use the <code>test-name</code> attribute in <code>test-assert</code> to store the iteration
 number as a string. But the <code>test-assert</code> macro only evaluates <code>test-name</code> once, so
 I abandoned that idea. The iteration number is made available inside the test
