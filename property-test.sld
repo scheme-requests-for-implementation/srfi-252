@@ -53,8 +53,8 @@
     (define max-int 1000000000000000001)
     ;; Maximum size for random bytevector/vector/lists generators.
     (define max-size 1001)
-    ;; Change to 127 for implementations that only support ASCII.
-    (define max-char #x10FFFF) ;unicode max
+    ;; Maximum character supported by integer->char.
+    (define max-char (cond-expand (full-unicode #x10FFFF) (else 127)))
 
     ;; Omit values that are not distinguished in the implementation.
     (cond-expand
