@@ -105,7 +105,7 @@
       (gcons* #\null
               (gmap integer->char
                     (gfilter (lambda (x)
-                               (or (< x #xd800) (> x #xdfff)))
+                               (or (< x #xD800) (> x #xDFFF)))
                              (make-random-integer-generator 0 max-char)))))
 
     (define (complex-generator)
