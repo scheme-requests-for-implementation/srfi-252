@@ -150,6 +150,11 @@
                    (every integer? (vector->list x)))
                  (list (vector-generator-of (integer-generator)))))
 
+(test-group "non-determinism"
+  (let ((lst1 (generator->list (integer-generator) 1001))
+        (lst2 (generator->list (integer-generator) 1001)))
+    (test-assert (not (equal? lst1 lst2)))))
+
 (test-group "determinism"
   (let ((rand (make-random-source)))
     (current-random-source rand)
