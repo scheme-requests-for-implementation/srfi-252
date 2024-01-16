@@ -216,38 +216,33 @@
 
     ;; Test procedures
 
-    (define (get-runner)
-      (or (test-runner-current) (let ((runner (property-test-runner)))
-                                  (test-runner-current runner)
-                                  runner)))
-
     (define (prop-test property generators runs)
-      (let ((runner (get-runner)))
-        (for-each
-         (lambda (n)
-           (test-assert
-               (apply property
-                      (let ((args (map (lambda (gen) (gen)) generators)))
-                        (test-result-set! runner 'property-test-arguments args)
-                        (test-result-set! runner 'property-test-iteration
-                                          (+ n 1))
-                        (test-result-set! runner 'property-test-iterations runs)
-                        args))))
-         (iota runs))))
+      (for-each
+       (lambda (n)
+         (test-assert
+             (apply property
+                    (let ((args (map (lambda (gen) (gen)) generators))
+                          (runner (test-runner-current)))
+                      (test-result-set! runner 'property-test-arguments args)
+                      (test-result-set! runner 'property-test-iteration
+                                        (+ n 1))
+                      (test-result-set! runner 'property-test-iterations runs)
+                      args))))
+       (iota runs)))
 
     (define (prop-test-error type property generators runs)
-      (let ((runner (get-runner)))
-        (for-each
-         (lambda (n)
-           (test-error
-            type
-            (apply property
-                   (let ((args (map (lambda (gen) (gen)) generators)))
-                     (test-result-set! runner 'property-test-arguments args)
-                     (test-result-set! runner 'property-test-iteration (+ n 1))
-                     (test-result-set! runner 'property-test-iterations runs)
-                     args))))
-         (iota runs))))
+      (for-each
+       (lambda (n)
+         (test-error
+          type
+          (apply property
+                 (let ((args (map (lambda (gen) (gen)) generators))
+                       (runner (test-runner-current)))
+                   (test-result-set! runner 'property-test-arguments args)
+                   (test-result-set! runner 'property-test-iteration (+ n 1))
+                   (test-result-set! runner 'property-test-iterations runs)
+                   args))))
+       (iota runs)))
 
     (define test-property-error
       (case-lambda
