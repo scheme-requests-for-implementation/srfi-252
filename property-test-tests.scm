@@ -27,9 +27,11 @@
         (scheme list)
         (scheme read)
         (srfi 18)
+        (srfi 27)
         (srfi 36)
         (srfi 64)
         (srfi 158)
+        (srfi 194)
         (property-test))
 
 (test-begin "property-test")
@@ -147,5 +149,14 @@
                    (<= (vector-length x) 1001)
                    (every integer? (vector->list x)))
                  (list (vector-generator-of (integer-generator)))))
+
+(test-group "determinism"
+  (let ((rand (make-random-source)))
+    (current-random-source rand)
+    (let ((lst1 (generator->list (boolean-generator) 1001))
+          (rand2 (make-random-source)))
+      (current-random-source rand2)
+      (let ((lst2 (generator->list (boolean-generator) 1001)))
+        (test-assert (equal? lst1 lst2))))))
 
 (test-end)
