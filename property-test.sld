@@ -57,37 +57,31 @@
     (define max-char (cond-expand (full-unicode #x10FFFF) (else 127)))
 
     ;; Omit values that are not distinguished in the implementation.
-    (cond-expand
-     (gauche ; Not distinguished: -0, -0.0, exact-complex
-      (define special-number '(;; integer
-                               0 1 -1
-                               ;; exact
-                               1/2 -1/2
-                               ;; inexact
-                               0.0 0.5 -0.5 1.0 -1.0
-                               ;; inexact-complex
-                               0.0+1.0i 0.0-1.0i
-                               0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
-                               1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
-                               ;; other
-                               +inf.0 -inf.0 +nan.0 -nan.0)))
-     (else
-      (define special-number '(;; integer
-                               0 -0 1 -1
-                               ;; exact
-                               1/2 -1/2
-                               ;; inexact
-                               0.0 -0.0 0.5 -0.5 1.0 -1.0
-                               ;; exact-complex
-                               0+i 0-i
-                               1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i
-                               1+i 1-i -1+i -1-i
-                               ;; inexact-complex
-                               0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
-                               0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
-                               1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
-                               ;; other
-                               +inf.0 -inf.0 +nan.0 -nan.0))))
+    (define special-number
+      (append
+       ;; Integers
+       (cond-expand (gauche '(0 1 -1)) (else '(0 -0 1 -1)))
+       ;; Exact
+       (cond-expand (ratios '(1/2 -1/2)) (else '()))
+       ;; Exact complex
+       (cond-expand (exact-complex '(0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i))
+                    (else '()))
+       ;; Exact ratios
+       (cond-expand ((and ratios exact-complex)
+                     '(1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i))
+                    (else '()))
+       ;; Inexact
+       (cond-expand (gauche '(0.0 0.5 -0.5 1.0 -1.0))
+                    (else '(0.0 -0.0 0.5 -0.5 1.0 -1.0)))
+       ;; Inexact-complex
+       (cond-expand (gauche '(0.0+1.0i 0.0-1.0i
+                              0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                              1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i))
+                    (else '(0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
+                            0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                            1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i)))
+       ;; Other
+       '(+inf.0 -inf.0 +nan.0 -nan.0)))
 
     ;; Generator procedures
 
