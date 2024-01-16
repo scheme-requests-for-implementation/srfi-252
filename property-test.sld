@@ -118,10 +118,14 @@
                (make-random-integer-generator (- max-int) max-int)))
 
     (define (exact-complex-generator)
-      (gappend (gfilter exact-complex? special-number)
-               (gmap make-rectangular
-                     (make-random-integer-generator (- max-int) max-int)
-                     (make-random-integer-generator (- max-int) max-int))))
+      (cond-expand (exact-complex
+                    (gappend (gfilter exact-complex? special-number)
+                             (gmap make-rectangular
+                                   (make-random-integer-generator
+                                    (- max-int) max-int)
+                                   (make-random-integer-generator
+                                    (- max-int) max-int))))
+                   (else (error "Exact complex is not supported."))))
 
     (define (inexact-complex-generator)
       (gappend (gfilter inexact-complex? special-number)

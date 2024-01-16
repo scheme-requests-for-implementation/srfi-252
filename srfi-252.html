@@ -345,7 +345,7 @@ distinguished in the implementation.
 <p>
 Create an infinite generator that returns objects that fulfill the
 <code>complex?</code> predicate.
-The real and imaginary parts of the complex numbers should be exact.
+The real and imaginary parts of the complex numbers must be exact.
 The generator should return the sequence
 <code>(0+0i -0-0i 1+1i -1-1i)</code> first, then a uniformly random distribution
 of exact complex numbers. Elements of the above sequence may be omitted if they
@@ -353,7 +353,7 @@ are not distinguished in the implementation.
 </p>
 <p>
 If the implementation does not support the <code>exact-complex</code> feature,
-this procedure may return inexact complex numbers.
+calling this procedure will raise an error.
 </p>
 <pre class="example">(define exact-complex-gen (exact-complex-generator))
 
