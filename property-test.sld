@@ -62,7 +62,7 @@
       (define special-number '(;; integer
                                0 1 -1
                                ;; exact
-                               1/2 -1/2 1.0 -1.0
+                               1/2 -1/2
                                ;; inexact
                                0.0 0.5 -0.5 1.0 -1.0
                                ;; inexact-complex
