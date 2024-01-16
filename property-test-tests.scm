@@ -87,21 +87,14 @@
 (test-group "exact-generator"
   (test-property exact? (list (exact-generator))))
 
-;; TODO: Gauche doesn't make complex exact numbers
-(cond-expand (gauche
-              (test-group "exact-complex-generator"
-                (test-property-skip (lambda (x)
-                                      (and (complex? x)
-                                           (exact? (real-part x))
-                                           (exact? (imag-part x))))
-                                    (list (exact-complex-generator)))))
-             (else
+(cond-expand (exact-complex
               (test-group "exact-complex-generator"
                 (test-property (lambda (x)
                                  (and (complex? x)
                                       (exact? (real-part x))
                                       (exact? (imag-part x))))
-                               (list (exact-complex-generator))))))
+                               (list (exact-complex-generator)))))
+             (else))
 
 (test-group "inexact-generator"
   (test-property inexact? (list (inexact-generator))))
