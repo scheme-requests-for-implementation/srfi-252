@@ -221,66 +221,69 @@
                                   (test-runner-current runner)
                                   runner)))
 
-    (define (prop-test property generators runner runs)
-      (for-each
-       (lambda (n)
-         (test-assert
-             (apply property
-                    (let ((args (map (lambda (gen) (gen)) generators)))
-                      (test-result-set! runner 'property-test-arguments args)
-                      (test-result-set! runner 'property-test-iteration (+ n 1))
-                      (test-result-set! runner 'property-test-iterations runs)
-                      args))))
-       (iota runs)))
+    (define (prop-test property generators runs)
+      (let ((runner (get-runner)))
+        (for-each
+         (lambda (n)
+           (test-assert
+               (apply property
+                      (let ((args (map (lambda (gen) (gen)) generators)))
+                        (test-result-set! runner 'property-test-arguments args)
+                        (test-result-set! runner 'property-test-iteration
+                                          (+ n 1))
+                        (test-result-set! runner 'property-test-iterations runs)
+                        args))))
+         (iota runs))))
 
-    (define (prop-test-error type property generators runner runs)
-      (for-each
-       (lambda (n)
-         (test-error
-          type
-          (apply property
-                 (let ((args (map (lambda (gen) (gen)) generators)))
-                   (test-result-set! runner 'property-test-arguments args)
-                   (test-result-set! runner 'property-test-iteration (+ n 1))
-                   (test-result-set! runner 'property-test-iterations runs)
-                   args))))
-       (iota runs)))
+    (define (prop-test-error type property generators runs)
+      (let ((runner (get-runner)))
+        (for-each
+         (lambda (n)
+           (test-error
+            type
+            (apply property
+                   (let ((args (map (lambda (gen) (gen)) generators)))
+                     (test-result-set! runner 'property-test-arguments args)
+                     (test-result-set! runner 'property-test-iteration (+ n 1))
+                     (test-result-set! runner 'property-test-iterations runs)
+                     args))))
+         (iota runs))))
 
     (define test-property-error
       (case-lambda
         ((property generators)
-         (prop-test-error #t property generators (get-runner) default-runs))
+         (prop-test-error #t property generators default-runs))
         ((property generators n)
-         (prop-test-error #t property generators (get-runner) n))))
+         (prop-test-error #t property generators n))))
 
     (define test-property-error-type
       (case-lambda
         ((type property generators)
-         (prop-test-error type property generators (get-runner) default-runs))
+         (prop-test-error type property generators default-runs))
         ((type property generators n)
-         (prop-test-error type property generators (get-runner) n))))
+         (prop-test-error type property generators n))))
 
     (define test-property-skip
       (case-lambda
         ((property generators)
          (begin (test-skip default-runs)
-                (prop-test property generators (get-runner) default-runs)))
+                (prop-test property generators default-runs)))
         ((property generators n)
          (begin (test-skip n)
-                (prop-test property generators (get-runner) n)))))
+                (prop-test property generators n)))))
 
     (define test-property-expect-fail
       (case-lambda
         ((property generators)
          (begin (test-expect-fail default-runs)
-                (prop-test property generators (get-runner) default-runs)))
+                (prop-test property generators default-runs)))
         ((property generators n)
          (begin (test-expect-fail n)
-                (prop-test property generators (get-runner) n)))))
+                (prop-test property generators n)))))
 
     (define test-property
       (case-lambda
         ((property generators)
-         (prop-test property generators (get-runner) default-runs))
+         (prop-test property generators default-runs))
         ((property generators n)
-         (prop-test property generators (get-runner) n))))))
+         (prop-test property generators n))))))
