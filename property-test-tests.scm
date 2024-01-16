@@ -68,7 +68,7 @@
   (test-property-error-type &read-error make-read-error-property
                             (list (string-generator))))
 
-(test-group "test-property_with-2-arguments"
+(test-group "test-property/with-2-arguments"
   (test-property (lambda (x y)
                    (and (boolean? x) (integer? y)))
                  (list (boolean-generator) (integer-generator))))
