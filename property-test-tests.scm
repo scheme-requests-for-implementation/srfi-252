@@ -28,6 +28,7 @@
         (scheme read)
         (srfi 27)
         (srfi 36)
+        (srfi 39)
         (srfi 64)
         (srfi 158)
         (srfi 194)
@@ -155,12 +156,10 @@
     (test-assert (not (equal? lst1 lst2)))))
 
 (test-group "determinism"
-  (let ((rand (make-random-source)))
-    (current-random-source rand)
-    (let ((lst1 (generator->list (boolean-generator) 1001))
-          (rand2 (make-random-source)))
-      (current-random-source rand2)
-      (let ((lst2 (generator->list (boolean-generator) 1001)))
-        (test-assert (equal? lst1 lst2))))))
+  (parameterize ((current-random-source (make-random-source)))
+    (let ((lst1 (generator->list (boolean-generator) 1001)))
+      (parameterize ((current-random-source (make-random-source)))
+        (let ((lst2 (generator->list (boolean-generator) 1001)))
+          (test-assert (equal? lst1 lst2)))))))
 
 (test-end)
