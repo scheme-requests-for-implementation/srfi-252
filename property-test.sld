@@ -51,7 +51,7 @@
     (define default-runs 100)
     ;; Maximum absolute value of a number for random generators.
     (define max-int 1000000000000000001)
-    ;; Maximum size for random bytevector/vector/lists generators.
+    ;; Maximum size for random bytevector/list/string/symbol/vector generators.
     (define max-size 1001)
     ;; Maximum character supported by integer->char.
     (define max-char (cond-expand (full-unicode #x10FFFF) (else 127)))
@@ -59,8 +59,10 @@
     ;; Omit values that are not distinguished in the implementation.
     (cond-expand
      (gauche ; Not distinguished: -0, -0.0, exact-complex
-      (define special-number '(;; exact
+      (define special-number '(;; integer
                                0 1 -1
+                               ;; exact
+                               1/2 -1/2 1.0 -1.0
                                ;; inexact
                                0.0 0.5 -0.5 1.0 -1.0
                                ;; inexact-complex
@@ -72,6 +74,8 @@
      (else
       (define special-number '(;; integer
                                0 -0 1 -1
+                               ;; exact
+                               1/2 -1/2
                                ;; inexact
                                0.0 -0.0 0.5 -0.5 1.0 -1.0
                                ;; exact-complex
