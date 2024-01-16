@@ -24,8 +24,8 @@
 
 (import (scheme base)
         (scheme complex)
-        (scheme list)
         (scheme read)
+        (srfi 1)
         (srfi 27)
         (srfi 36)
         (srfi 39)
