@@ -80,8 +80,8 @@
                     (else '(0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
                             0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
                             1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i)))
-       ;; Other
-       '(+inf.0 -inf.0 +nan.0 -nan.0)))
+       ;; Other (-nan.0 not required, synonymous with +nan.0)
+       '(+inf.0 -inf.0 +nan.0)))
 
     ;; Generator procedures
 
