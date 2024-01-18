@@ -61,12 +61,12 @@
       (append
        ;; Integers
        (cond-expand (gauche '(0 1 -1)) (else '(0 -0 1 -1)))
-       ;; Exact
+       ;; Exact ratios
        (cond-expand (ratios '(1/2 -1/2)) (else '()))
        ;; Exact complex
        (cond-expand (exact-complex '(0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i))
                     (else '()))
-       ;; Exact ratios
+       ;; Exact complex ratios
        (cond-expand ((and ratios exact-complex)
                      '(1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i))
                     (else '()))
