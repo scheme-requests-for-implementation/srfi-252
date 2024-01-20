@@ -216,7 +216,9 @@
                           special-number)
                  (gmap /
                        (make-random-integer-generator (- max-int) max-int)
-                       (make-random-integer-generator (- max-int) max-int))))
+                       (gfilter (lambda (x) (not (zero? x)))
+                                (make-random-integer-generator
+                                 (- max-int) max-int)))))
        (else
         (error "Ratios are not supported."))))
 
