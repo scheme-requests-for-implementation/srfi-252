@@ -147,6 +147,12 @@
                         special-number)
                (make-random-integer-generator (- max-int) max-int)))
 
+    (define (ratio-gen)
+      (gmap /
+            (make-random-integer-generator (- max-int) max-int)
+            (gfilter (lambda (x) (not (zero? x)))
+                     (make-random-integer-generator (- max-int) max-int))))
+
     (define (exact-number-generator)
       ;; Ensure there are no repeated special values, and a random sampling
       ;; between exact ratios, complex, and integers.
@@ -156,14 +162,10 @@
         ((and ratios exact-complex)
          (gsampling (gmap make-rectangular
                           (exact-real-generator) (exact-real-generator))
-                    (gmap /
-                          (make-random-integer-generator (- max-int) max-int)
-                          (make-random-integer-generator (- max-int) max-int))
+                    (ratio-gen)
                     (make-random-integer-generator (- max-int) max-int)))
         (ratios
-         (gsampling (gmap /
-                          (make-random-integer-generator (- max-int) max-int)
-                          (make-random-integer-generator (- max-int) max-int))
+         (gsampling (ratio-gen)
                     (make-random-integer-generator (- max-int) max-int)))
         (exact-complex
          (gsampling (gmap make-rectangular
@@ -178,11 +180,8 @@
                   (and (rational? x) (exact? x)))
                 special-number)
        (cond-expand
-        (ratios (gsampling
-                 (gmap /
-                       (make-random-integer-generator (- max-int) max-int)
-                       (make-random-integer-generator (- max-int) max-int))
-                 (make-random-integer-generator (- max-int) max-int)))
+        (ratios (gsampling (ratio-gen)
+                           (make-random-integer-generator (- max-int) max-int)))
         (else (make-random-integer-generator (- max-int) max-int)))))
 
     (define (exact-real-generator)
@@ -191,11 +190,8 @@
                   (and (real? x) (exact? x)))
                 special-number)
        (cond-expand
-        (ratios (gsampling
-                 (gmap /
-                       (make-random-integer-generator (- max-int) max-int)
-                       (make-random-integer-generator (- max-int) max-int))
-                 (make-random-integer-generator (- max-int) max-int)))
+        (ratios (gsampling (ratio-gen)
+                           (make-random-integer-generator (- max-int) max-int)))
         (else (make-random-integer-generator (- max-int) max-int)))))
 
     (define (exact-integer-complex-generator)
