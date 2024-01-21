@@ -46,8 +46,9 @@
           inexact-number-generator inexact-rational-generator
           inexact-real-generator
           ;; Unions of numerical generators
-          complex-generator integer-generator number-generator
-          rational-generator real-generator
+          complex-generator integer-generator
+          number-generator rational-generator
+          real-generator
           ;; Special generators
           list-generator-of pair-generator-of procedure-generator-of
           vector-generator-of)
