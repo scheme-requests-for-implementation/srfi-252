@@ -40,7 +40,7 @@
           exact-complex-generator exact-integer-generator
           exact-number-generator exact-rational-generator
           exact-real-generator
-          exact-integer-complex-generator exact-ratio-generator
+          exact-integer-complex-generator
           ;; inexact number generators
           inexact-complex-generator inexact-integer-generator
           inexact-number-generator inexact-rational-generator
@@ -212,21 +212,6 @@
                        (make-random-integer-generator (- max-int) max-int)
                        (make-random-integer-generator (- max-int) max-int))))
        (else (error "Exact complex is not supported."))))
-
-    (define (exact-ratio-generator)
-      (cond-expand
-       (ratios
-        (gappend (gfilter (lambda (x)
-                            (and (exact? x)
-                                 (not (= 1 (denominator x)))))
-                          special-number)
-                 (gmap /
-                       (make-random-integer-generator (- max-int) max-int)
-                       (gfilter (lambda (x) (not (zero? x)))
-                                (make-random-integer-generator
-                                 (- max-int) max-int)))))
-       (else
-        (error "Ratios are not supported."))))
 
     ;; Inexact number generators
 

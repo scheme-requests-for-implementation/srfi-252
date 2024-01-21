@@ -132,19 +132,6 @@
                    (list (exact-integer-complex-generator))))
    (else)))
 
-(test-group "exact-ratio-generator"
-  (cond-expand
-   (ratios
-    (test-property (lambda (x)
-                            (and (exact? x)
-                                 (not (= 1 (denominator x)))))
-                   (list (exact-ratio-generator))))
-   (else
-    (test-property-error (lambda (x)
-                            (and (exact? x)
-                                 (not (= 1 (denominator x)))))
-                         (list (exact-integer-complex-generator))))))
-
 ;; Testing inexact generators
 
 (test-group "inexact-complex-generator"

@@ -528,31 +528,6 @@ distinguished in the implementation.
 </dl>
 
 <dl>
-<dt id="exact_ratio_generator"><code>(exact-ratio-generator)</code></dt>
-<dd>
-<p>
-Create an infinite generator that returns objects that fulfill the
-<code>exact?</code> predicates.
-The generator should return the sequence
-</p><pre>1/2 -1/2
-</pre>
-<p>
-first, then a uniformly random distribution of exact
-ratios with nonzero divisors. Elements of the above sequence may be omitted if
-they are not distinguished in the implementation.
-</p>
-<p>
-If the implementation does not support the <code>ratios</code> feature,
-calling this procedure must raise an error.
-</p>
-<pre class="example">(define exact-ratio-gen (exact-ratio-generator))
-
-(exact-ratio-gen) ; =&gt; 1/2
-</pre>
-</dd>
-</dl>
-
-<dl>
 <dt id="exact_rational_generator"><code>(exact-rational-generator)</code></dt>
 <dd>
 <p>
