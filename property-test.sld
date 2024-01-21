@@ -86,10 +86,16 @@
        ;; Inexact-complex
        (cond-expand (gauche '(0.0+1.0i 0.0-1.0i
                               0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
-                              1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i))
+                              1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                              +inf.0+inf.0i +inf.0-inf.0i
+                              -inf.0+inf.0i -inf.0-inf.0i
+                              +nan.0+nan.0i))
                     (else '(0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
                             0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
-                            1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i)))
+                            1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                            +inf.0+inf.0i +inf.0-inf.0i
+                            -inf.0+inf.0i -inf.0-inf.0i
+                            +nan.0+nan.0i)))
        ;; Other (-nan.0 not required, synonymous with +nan.0)
        '(+inf.0 -inf.0 +nan.0)))
 
