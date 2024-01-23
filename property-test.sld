@@ -26,34 +26,79 @@
   (import (scheme base)
           (scheme case-lambda)
           (scheme complex)
-          (only (srfi 1) iota)
+          (srfi 1)
           (srfi 64)
           (srfi 158)
           (srfi 194))
   (export test-property test-property-expect-fail test-property-skip
           test-property-error test-property-error-type
           property-test-runner
+          ;; Generator procedures
           boolean-generator bytevector-generator
-          char-generator complex-generator
-          exact-generator exact-complex-generator
-          inexact-generator inexact-complex-generator
-          integer-generator number-generator rational-generator real-generator
-          string-generator symbol-generator
+          char-generator string-generator symbol-generator
+          ;; exact number generators
+          exact-complex-generator exact-integer-generator
+          exact-number-generator exact-rational-generator
+          exact-real-generator
+          exact-integer-complex-generator
+          ;; inexact number generators
+          inexact-complex-generator inexact-integer-generator
+          inexact-number-generator inexact-rational-generator
+          inexact-real-generator
+          ;; Unions of numerical generators
+          complex-generator integer-generator
+          number-generator rational-generator
+          real-generator
+          ;; Special generators
           list-generator-of pair-generator-of procedure-generator-of
           vector-generator-of)
   (begin
 
     ;; Constants
-    ;; May be implementation-dependent, but should be reasonably high numbers.
 
+    ;; These values may be implementation-dependent, but should be reasonably
+    ;; high numbers.
     ;; Number of property tests to run by default.
     (define default-runs 100)
-    ;; Maximum number size for random generators.
+    ;; Maximum absolute value of a number for random generators.
     (define max-int 1000000000000000001)
-    ;; Maximum size for random bytevector/vector/lists generators.
+    ;; Maximum size for random bytevector/list/string/symbol/vector generators.
     (define max-size 1001)
-    ;; Change to 127 for implementations that only support ASCII.
-    (define max-char 1114111) ;unicode max
+    ;; Maximum character supported by integer->char.
+    (define max-char (cond-expand (full-unicode #x10FFFF) (else 127)))
+
+    ;; Omit values that are not distinguished in the implementation.
+    (define special-number
+      (append
+       ;; Exact integers
+       (cond-expand (gauche '(0 1 -1)) (else '(0 -0 1 -1)))
+       ;; Exact ratios
+       (cond-expand (ratios '(1/2 -1/2)) (else '()))
+       ;; Exact complex
+       (cond-expand (exact-complex '(0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i))
+                    (else '()))
+       ;; Exact complex ratios
+       (cond-expand ((and ratios exact-complex)
+                     '(1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i))
+                    (else '()))
+       ;; Inexact (integers and non-integers)
+       (cond-expand (gauche '(0.0 0.5 -0.5 1.0 -1.0))
+                    (else '(0.0 -0.0 0.5 -0.5 1.0 -1.0)))
+       ;; Inexact-complex
+       (cond-expand (gauche '(0.0+1.0i 0.0-1.0i
+                              0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                              1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                              +inf.0+inf.0i +inf.0-inf.0i
+                              -inf.0+inf.0i -inf.0-inf.0i
+                              +nan.0+nan.0i))
+                    (else '(0.0+1.0i 0.0-1.0i -0.0+1.0i -0.0-1.0i
+                            0.5+0.5i 0.5-0.5i -0.5+0.5i -0.5-0.5i
+                            1.0+1.0i 1.0-1.0i -1.0+1.0i -1.0-1.0i
+                            +inf.0+inf.0i +inf.0-inf.0i
+                            -inf.0+inf.0i -inf.0-inf.0i
+                            +nan.0+nan.0i)))
+       ;; Other (-nan.0 not required, synonymous with +nan.0)
+       '(+inf.0 -inf.0 +nan.0)))
 
     ;; Generator procedures
 
@@ -69,61 +114,10 @@
 
     (define (char-generator)
       (gcons* #\null
-              (gmap integer->char (make-random-integer-generator 0 max-char))))
-
-    (define (complex-generator)
-      (gcons* (make-rectangular 0.0 0.0)
-              (make-rectangular 0 0)
-              (make-rectangular 1 1)
-              (make-rectangular 1.1 1.1)
-              (make-rectangular -1 -1)
-              (make-rectangular -1.1 -1.1)
-              (make-rectangular +inf.0 +inf.0)
-              (make-rectangular -inf.0 -inf.0)
-              (make-rectangular +nan.0 +nan.0)
-              ;; omit (-nan.0 -nan.0) as there is no significance in Gauche.
-              (make-random-rectangular-generator (- max-int) max-int
-                                                 (- max-int) max-int)))
-
-    (define (exact-generator)
-      ;; Not including -0
-      (gcons* 0 1 -1 (make-random-integer-generator (- max-int) max-int)))
-
-    (define (exact-complex-generator)
-      (gcons* (make-rectangular 0 0)
-              (make-rectangular 1 1)
-              (make-rectangular -1 -1)
-              (gmap make-rectangular
-                    (make-random-integer-generator (- max-int) max-int)
-                    (make-random-integer-generator (- max-int) max-int))))
-
-    (define (inexact-complex-generator)
-      (gcons* (make-rectangular 0.0 0.0)
-              (make-rectangular 1.1 1.1)
-              (make-rectangular -1.1 -1.1)
-              (make-rectangular +inf.0 +inf.0)
-              (make-rectangular -inf.0 -inf.0)
-              (make-rectangular +nan.0 +nan.0)
-              ;; (make-rectangular -nan.0 -nan.0)
-              (make-random-rectangular-generator (- max-int) max-int
-                                                 (- max-int) max-int)))
-
-    (define (inexact-generator)
-      ;; Not including -0.0 or -nan.0
-      (gcons* 0.0 1.1 -1.1 +inf.0 -inf.0 +nan.0
-       (make-random-real-generator (- max-int) max-int)))
-
-    (define (integer-generator) (exact-generator))
-
-    (define (number-generator)
-      (gcons* 0.0 0  1 -1 1.1 -1.1 +inf.0 -inf.0 +nan.0 -nan.0
-              (inexact-generator)))
-
-    (define (rational-generator)
-      (gcons* 0 0.0 -1.1 1.1 -1 1
-              (make-random-real-generator (- max-int) max-int)))
-
-    (define (real-generator) (inexact-generator))
+              (gmap integer->char
+                    (gfilter (lambda (x)
+                               (or (< x #xD800) (> x #xDFFF)))
+                             (make-random-integer-generator 0 max-char)))))
 
     (define (string-generator)
       (gcons* ""
@@ -133,6 +127,149 @@
 
     (define (symbol-generator)
       (gmap string->symbol (string-generator)))
+
+    ;; Exact number generators
+
+    (define (exact-complex-generator)
+      (cond-expand (exact-complex
+                    (gappend (gfilter (lambda (x)
+                                        (and (complex? x)
+                                             (exact? (real-part x))
+                                             (exact? (imag-part x))))
+                                      special-number)
+                             (gmap make-rectangular
+                                   (exact-real-generator)
+                                   (exact-real-generator))))
+                   (else (error "Exact complex is not supported."))))
+
+    (define (exact-integer-generator)
+      (gappend (gfilter (lambda (x)
+                          (and (exact? x) (integer? x)))
+                        special-number)
+               (make-random-integer-generator (- max-int) max-int)))
+
+    (define (ratio-gen)
+      (gmap /
+            (make-random-integer-generator (- max-int) max-int)
+            (gfilter (lambda (x) (not (zero? x)))
+                     (make-random-integer-generator (- max-int) max-int))))
+
+    (define (exact-number-generator)
+      ;; Ensure there are no repeated special values, and a random sampling
+      ;; between exact ratios, complex, and integers.
+      (gappend
+       (gfilter exact? special-number)
+       (cond-expand
+        ((and ratios exact-complex)
+         (gsampling (gmap make-rectangular
+                          (exact-real-generator) (exact-real-generator))
+                    (ratio-gen)
+                    (make-random-integer-generator (- max-int) max-int)))
+        (ratios
+         (gsampling (ratio-gen)
+                    (make-random-integer-generator (- max-int) max-int)))
+        (exact-complex
+         (gsampling (gmap make-rectangular
+                          (exact-real-generator) (exact-real-generator))
+                    (make-random-integer-generator (- max-int) max-int)))
+        (else
+         (make-random-integer-generator (- max-int) max-int)))))
+
+    (define (exact-rational-generator)
+      (gappend
+       (gfilter (lambda (x)
+                  (and (rational? x) (exact? x)))
+                special-number)
+       (cond-expand
+        (ratios (gsampling (ratio-gen)
+                           (make-random-integer-generator (- max-int) max-int)))
+        (else (make-random-integer-generator (- max-int) max-int)))))
+
+    (define (exact-real-generator)
+      (gappend
+       (gfilter (lambda (x)
+                  (and (real? x) (exact? x)))
+                special-number)
+       (cond-expand
+        (ratios (gsampling (ratio-gen)
+                           (make-random-integer-generator (- max-int) max-int)))
+        (else (make-random-integer-generator (- max-int) max-int)))))
+
+    (define (exact-integer-complex-generator)
+      (cond-expand
+       (exact-complex
+        (gappend (gfilter (lambda (x)
+                            (and (complex? x)
+                                 (exact? (real-part x))
+                                 (exact? (imag-part x))
+                                 (integer? (real-part x))
+                                 (integer? (imag-part x))))
+                          special-numbers)
+                 (gmap make-rectangular
+                       (make-random-integer-generator (- max-int) max-int)
+                       (make-random-integer-generator (- max-int) max-int))))
+       (else (error "Exact complex is not supported."))))
+
+    ;; Inexact number generators
+
+    (define (inexact-complex-generator)
+      (gappend (gfilter (lambda (x)
+                          (and (complex? x)
+                               (inexact? (real-part x))
+                               (inexact? (imag-part x))))
+                        special-number)
+               (make-random-rectangular-generator (- max-int) max-int
+                                                  (- max-int) max-int)))
+
+    (define (inexact-integer-generator)
+      (gmap inexact (exact-integer-generator)))
+
+    (define (inexact-number-generator)
+      (gappend (gfilter inexact? special-number)
+               (gsampling (make-random-rectangular-generator
+                           (- max-int) max-int (- max-int) max-int)
+                          (make-random-real-generator (- max-int) max-int))))
+
+    (define (inexact-rational-generator)
+      (gappend (gfilter (lambda (x)
+                          (and (rational? x)
+                               (inexact? x)))
+                        special-number)
+               (make-random-real-generator (- max-int) max-int)))
+
+    (define (inexact-real-generator)
+      (gappend (gfilter (lambda (x)
+                          (and (real? x)
+                               (inexact? x)))
+                        special-number)
+               (make-random-real-generator (- max-int) max-int)))
+
+    ;; Unions of number generators
+
+    (define (complex-generator)
+      (cond-expand (exact-complex
+                    (gsampling (exact-complex-generator)
+                               (inexact-complex-generator)))
+                   (else
+                    (inexact-complex-generator))))
+
+    (define (integer-generator)
+      (gsampling (exact-integer-generator)
+                 (inexact-integer-generator)))
+
+    (define (number-generator)
+      ;; TODO: May need to be modified for unusual implementation-specific
+      ;; number types, like Kawa's quaternion.
+      (gsampling (exact-number-generator)
+                 (inexact-number-generator)))
+
+    (define (rational-generator)
+      (gsampling (exact-rational-generator)
+                 (inexact-rational-generator)))
+
+    (define (real-generator)
+      (gsampling (exact-real-generator)
+                 (inexact-real-generator)))
 
     ;; Special generators for collection types
 
@@ -187,30 +324,28 @@
 
     ;; Test procedures
 
-    (define (get-runner)
-      (or (test-runner-current) (let ((runner (property-test-runner)))
-                                  (test-runner-current runner)
-                                  runner)))
-
-    (define (prop-test property generators runner runs)
+    (define (prop-test property generators runs)
       (for-each
        (lambda (n)
          (test-assert
              (apply property
-                    (let ((args (map (lambda (gen) (gen)) generators)))
+                    (let ((args (map (lambda (gen) (gen)) generators))
+                          (runner (test-runner-current)))
                       (test-result-set! runner 'property-test-arguments args)
-                      (test-result-set! runner 'property-test-iteration (+ n 1))
+                      (test-result-set! runner 'property-test-iteration
+                                        (+ n 1))
                       (test-result-set! runner 'property-test-iterations runs)
                       args))))
        (iota runs)))
 
-    (define (prop-test-error type property generators runner runs)
+    (define (prop-test-error type property generators runs)
       (for-each
        (lambda (n)
          (test-error
           type
           (apply property
-                 (let ((args (map (lambda (gen) (gen)) generators)))
+                 (let ((args (map (lambda (gen) (gen)) generators))
+                       (runner (test-runner-current)))
                    (test-result-set! runner 'property-test-arguments args)
                    (test-result-set! runner 'property-test-iteration (+ n 1))
                    (test-result-set! runner 'property-test-iterations runs)
@@ -220,38 +355,38 @@
     (define test-property-error
       (case-lambda
         ((property generators)
-         (prop-test-error #t property generators (get-runner) default-runs))
+         (prop-test-error #t property generators default-runs))
         ((property generators n)
-         (prop-test-error #t property generators (get-runner) n))))
+         (prop-test-error #t property generators n))))
 
     (define test-property-error-type
       (case-lambda
         ((type property generators)
-         (prop-test-error type property generators (get-runner) default-runs))
+         (prop-test-error type property generators default-runs))
         ((type property generators n)
-         (prop-test-error type property generators (get-runner) n))))
+         (prop-test-error type property generators n))))
 
     (define test-property-skip
       (case-lambda
         ((property generators)
          (begin (test-skip default-runs)
-                (prop-test property generators (get-runner) default-runs)))
+                (prop-test property generators default-runs)))
         ((property generators n)
          (begin (test-skip n)
-                (prop-test property generators (get-runner) n)))))
+                (prop-test property generators n)))))
 
     (define test-property-expect-fail
       (case-lambda
         ((property generators)
          (begin (test-expect-fail default-runs)
-                (prop-test property generators (get-runner) default-runs)))
+                (prop-test property generators default-runs)))
         ((property generators n)
          (begin (test-expect-fail n)
-                (prop-test property generators (get-runner) n)))))
+                (prop-test property generators n)))))
 
     (define test-property
       (case-lambda
         ((property generators)
-         (prop-test property generators (get-runner) default-runs))
+         (prop-test property generators default-runs))
         ((property generators n)
-         (prop-test property generators (get-runner) n))))))
+         (prop-test property generators n))))))

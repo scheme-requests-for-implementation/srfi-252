@@ -24,12 +24,14 @@
 
 (import (scheme base)
         (scheme complex)
-        (scheme list)
         (scheme read)
-        (srfi 18)
+        (srfi 1)
+        (srfi 27)
         (srfi 36)
+        (srfi 39)
         (srfi 64)
         (srfi 158)
+        (srfi 194)
         (property-test))
 
 (test-begin "property-test")
@@ -41,10 +43,10 @@
 (define (error-three-property x) (string-append 1 2))
 (define (make-read-error x) (read (open-input-string (string-append ")" x))))
 (define (make-read-error-property x) (symbol? (make-read-error x)))
-(define (slow-boolean-generator) (gmap (lambda (x)
-                                         (thread-sleep! 100000)
-                                         x)
-                                       (boolean-generator)))
+(define (bad-generator) (gmap (lambda (x)
+                                (string-append 1 2)
+                                x)
+                              (boolean-generator)))
 
 (test-group "test-property"
   (test-property three-property (list (integer-generator)))
@@ -56,8 +58,8 @@
   (test-property-expect-fail wrong-three-property (list (integer-generator)) 10))
 
 (test-group "test-property-skip" ; shouldn't run
-  (test-property-skip error-three-property (list (slow-boolean-generator)))
-  (test-property-skip error-three-property (list (slow-boolean-generator)) 10))
+  (test-property-skip three-property (list (bad-generator)))
+  (test-property-skip three-property (list (bad-generator)) 10))
 
 (test-group "test-property-error"
   (test-property-error error-three-property (list (integer-generator)))
@@ -67,10 +69,12 @@
   (test-property-error-type &read-error make-read-error-property
                             (list (string-generator))))
 
-(test-group "test-property_with-2-arguments"
+(test-group "test-property/with-2-arguments"
   (test-property (lambda (x y)
                    (and (boolean? x) (integer? y)))
                  (list (boolean-generator) (integer-generator))))
+
+;; Testing basic generators
 
 (test-group "boolean-generator"
   (test-property boolean? (list (boolean-generator))))
@@ -81,30 +85,53 @@
 (test-group "char-generator"
   (test-property char? (list (char-generator))))
 
-(test-group "complex-generator"
-  (test-property complex? (list (complex-generator))))
+(test-group "string-generator"
+  (test-property string? (list (string-generator))))
 
-(test-group "exact-generator"
-  (test-property exact? (list (exact-generator))))
+(test-group "symbol-generator"
+  (test-property symbol? (list (symbol-generator))))
 
-;; TODO: Gauche doesn't make complex exact numbers
-(cond-expand (gauche
-              (test-group "exact-complex-generator"
-                (test-property-expect-fail (lambda (x)
-                                             (and (complex? x)
-                                                  (exact? (real-part x))
-                                                  (exact? (imag-part x))))
-                                           (list (exact-complex-generator)))))
-             (else
-              (test-group "exact-complex-generator"
-                (test-property (lambda (x)
-                                 (and (complex? x)
-                                      (exact? (real-part x))
-                                      (exact? (imag-part x))))
-                               (list (exact-complex-generator))))))
+;; Testing exact generators
 
-(test-group "inexact-generator"
-  (test-property inexact? (list (inexact-generator))))
+(cond-expand
+ (exact-complex
+  (test-group "exact-complex-generator"
+    (test-property (lambda (x)
+                     (and (complex? x)
+                          (exact? (real-part x))
+                          (exact? (imag-part x))))
+                   (list (exact-complex-generator)))))
+ (else))
+
+(test-group "exact-integer-generator"
+  (test-property (lambda (x)
+                   (and (integer? x) (exact? x)))
+                 (list (exact-integer-generator))))
+
+(test-group "exact-number-generator"
+  (test-property exact? (list (exact-number-generator))))
+
+(test-group "exact-rational-generator"
+  (test-property (lambda (x)
+                   (and (exact? x) (rational? x)))
+                 (list (exact-rational-generator))))
+
+(test-group "exact-real-generator"
+  (test-property (lambda (x)
+                   (and (exact? x) (real? x)))
+                 (list (exact-real-generator))))
+
+(test-group "exact-integer-complex-generator"
+  (cond-expand
+   (exact-complex
+    (test-property (lambda (x)
+                     (and (complex? x)
+                          (exact? (real-part x))
+                          (exact? (imag-part x))))
+                   (list (exact-integer-complex-generator))))
+   (else)))
+
+;; Testing inexact generators
 
 (test-group "inexact-complex-generator"
   (test-property (lambda (x)
@@ -112,6 +139,29 @@
                         (inexact? (real-part x))
                         (inexact? (imag-part x))))
                  (list (inexact-complex-generator))))
+
+(test-group "inexact-integer-generator"
+  (test-property (lambda (x)
+                   (and (inexact? x) (integer? x)))
+                 (list (inexact-integer-generator))))
+
+(test-group "inexact-number-generator"
+  (test-property inexact? (list (inexact-number-generator))))
+
+(test-group "inexact-rational-generator"
+  (test-property (lambda (x)
+                   (and (inexact? x) (rational? x)))
+                 (list (inexact-rational-generator))))
+
+(test-group "inexact-integer-generator"
+  (test-property (lambda (x)
+                   (and (inexact? x) (real? x)))
+                 (list (inexact-real-generator))))
+
+;; Testing union generators
+
+(test-group "complex-generator"
+  (test-property complex? (list (complex-generator))))
 
 (test-group "integer-generator"
   (test-property integer? (list (integer-generator))))
@@ -125,11 +175,7 @@
 (test-group "real-generator"
   (test-property real? (list (real-generator))))
 
-(test-group "string-generator"
-  (test-property string? (list (string-generator))))
-
-(test-group "symbol-generator"
-  (test-property symbol? (list (symbol-generator))))
+;; Testing special generators
 
 (test-group "list-generator-of"
   (test-property (lambda (x)
@@ -154,5 +200,17 @@
                    (<= (vector-length x) 1001)
                    (every integer? (vector->list x)))
                  (list (vector-generator-of (integer-generator)))))
+
+(test-group "non-determinism"
+  (let ((lst1 (generator->list (integer-generator) 1001))
+        (lst2 (generator->list (integer-generator) 1001)))
+    (test-assert (not (equal? lst1 lst2)))))
+
+(test-group "determinism"
+  (parameterize ((current-random-source (make-random-source)))
+    (let ((lst1 (generator->list (boolean-generator) 1001)))
+      (parameterize ((current-random-source (make-random-source)))
+        (let ((lst2 (generator->list (boolean-generator) 1001)))
+          (test-assert (equal? lst1 lst2)))))))
 
 (test-end)
