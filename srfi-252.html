@@ -723,7 +723,8 @@ is not specified, <code>subgenerator-car</code> will be used to generate both
 elements of the pair.
 </p>
 <pre class="example">
-(define pair-gen (pair-generator-of (integer-generator) (boolean-generator)))
+(define pair-gen
+  (pair-generator-of (integer-generator) (boolean-generator)))
 
 (pair-gen) ; => '(0 . #t)
 </pre>
