@@ -174,7 +174,8 @@ This only affects test reporting, not test execution.
 (define (my-square z) (+ z 1)) ; Incorrect for all inputs
 (define (my-square-property z) (= (sqrt (my-square z)) z))
 
-(test-property-expect-fail my-square-property (list (integer-generator)))
+(test-property-expect-fail my-square-property
+  (list (integer-generator)))
 </pre>
 </dd>
 </dl>
@@ -314,10 +315,10 @@ uniformly random distribution of characters.
 <dd>
 <p>
 Create an infinite generator that returns strings.
-The generator should return the sequence
-<code>("" "\0")</code> first, then a series of strings with uniformly randomly
-distributed contents and lengths. The maximum length of the generated strings
-is chosen by the implementation.
+The generator should return the strings
+<code>""</code> and <code>"\0"</code> first, then a series of strings with
+uniformly randomly distributed contents and lengths. The maximum length of the
+generated strings is chosen by the implementation.
 </p>
 <pre class="example">
 (define string-gen (string-generator))
