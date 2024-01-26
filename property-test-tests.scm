@@ -1,6 +1,6 @@
 ;; Tests for property-test library.
 ;; SPDX-License-Identifier: MIT
-;; Copyright 2024 Antero Mejr <antero@mailbox.org>
+;; Copyright 2024 Antero Mejr <mail@antr.me>
 
 ;; Permission is hereby granted, free of charge, to any person
 ;; obtaining a copy of this software and associated documentation
