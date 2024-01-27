@@ -30,6 +30,7 @@
           (srfi 64)
           (srfi 158)
           (srfi 194))
+  (cond-expand ((library (srfi 143)) (import (srfi 143))) (else))
   (export test-property test-property-expect-fail test-property-skip
           test-property-error test-property-error-type
           property-test-runner
@@ -61,7 +62,8 @@
     ;; Number of property tests to run by default.
     (define default-runs 100)
     ;; Maximum absolute value of a number for random generators.
-    (define max-int 1000000000000000001)
+    (define max-int (cond-expand ((library (srfi 143)) fx-greatest)
+                                 (else (expt 2 24))))
     ;; Maximum size for random bytevector/list/string/symbol/vector generators.
     (define max-size 1001)
     ;; Maximum character supported by integer->char.
