@@ -451,7 +451,7 @@ are not distinguished in the implementation.
 </p>
 <p>
 If the implementation does not support the <code>exact-complex</code> feature,
-calling this procedure must raise an error.
+it is an error to call this procedure.
 </p>
 <pre class="example">(define exact-complex-gen (exact-complex-generator))
 
@@ -499,7 +499,7 @@ not distinguished in the implementation.
 </p>
 <p>
 If the implementation does not support the <code>exact-complex</code> feature,
-calling this procedure must raise an error.
+it is an error to call this procedure.
 </p>
 <pre class="example">(define exact-int-comp-gen (exact-integer-complex-generator))
 
