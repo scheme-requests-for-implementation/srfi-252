@@ -1,6 +1,6 @@
 ;; Property-based testing extension for SRFI 64.
 ;; SPDX-License-Identifier: MIT
-;; Copyright 2024 Antero Mejr <antero@mailbox.org>
+;; Copyright 2024 Antero Mejr <mail@antr.me>
 
 ;; Permission is hereby granted, free of charge, to any person
 ;; obtaining a copy of this software and associated documentation
@@ -30,6 +30,7 @@
           (srfi 64)
           (srfi 158)
           (srfi 194))
+  (cond-expand ((library (srfi 143)) (import (srfi 143))) (else))
   (export test-property test-property-expect-fail test-property-skip
           test-property-error test-property-error-type
           property-test-runner
@@ -61,11 +62,12 @@
     ;; Number of property tests to run by default.
     (define default-runs 100)
     ;; Maximum absolute value of a number for random generators.
-    (define max-int 1000000000000000001)
+    (define max-int (cond-expand ((library (srfi 143)) fx-greatest)
+                                 (else (expt 2 24))))
     ;; Maximum size for random bytevector/list/string/symbol/vector generators.
     (define max-size 1001)
     ;; Maximum character supported by integer->char.
-    (define max-char (cond-expand (full-unicode #x10FFFF) (else 127)))
+    (define max-char (cond-expand (full-unicode #x10FFFF) (else 128)))
 
     ;; Omit values that are not distinguished in the implementation.
     (define special-number

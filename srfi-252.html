@@ -23,9 +23,6 @@ SPDX-License-Identifier: MIT
         <li>60-day deadline: 2024-03-13</li>
         <li>Draft #1 published: 2024-01-13</li>
         <li>Draft #2 published: 2024-01-23</li>
-        <li>Antero's <a href="https://github.com/a2378/srfi-property-testing">personal
-            Git repo for this SRFI</a> for reference while the SRFI is in
-          <em>draft</em> status</li>
       </ul>
 
 <h2 id="abstract">Abstract</h2>
@@ -451,7 +448,7 @@ are not distinguished in the implementation.
 </p>
 <p>
 If the implementation does not support the <code>exact-complex</code> feature,
-calling this procedure must raise an error.
+it is an error to call this procedure.
 </p>
 <pre class="example">(define exact-complex-gen (exact-complex-generator))
 
@@ -499,7 +496,7 @@ not distinguished in the implementation.
 </p>
 <p>
 If the implementation does not support the <code>exact-complex</code> feature,
-calling this procedure must raise an error.
+it is an error to call this procedure.
 </p>
 <pre class="example">(define exact-int-comp-gen (exact-integer-complex-generator))
 
@@ -779,8 +776,10 @@ argument is not specified, the implementation may select the size range.
 A conformant sample implementation is provided. It depends on R7RS-small,
 <a href="https://srfi.schemers.org/srfi-1/srfi-1.html">SRFI 1</a>,
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>,
-<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>, and
-<a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>.
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>,
+<a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>,
+and optionally,
+<a href="https://srfi.schemers.org/srfi-143/srfi-143.html">SRFI 143</a>.
 However, there are values in the implementation that may need to be adjusted.
 The size of the generated test inputs, and the number of cases to run, should be
 tuned depending on the performance characteristics of the implementation. These
