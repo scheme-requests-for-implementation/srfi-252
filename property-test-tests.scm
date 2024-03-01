@@ -127,7 +127,9 @@
     (test-property (lambda (x)
                      (and (complex? x)
                           (exact? (real-part x))
-                          (exact? (imag-part x))))
+                          (exact? (imag-part x))
+                          (integer? (real-part x))
+                          (integer? (imag-part x))))
                    (list (exact-integer-complex-generator))))
    (else)))
 
