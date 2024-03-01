@@ -43,22 +43,6 @@ interface to run property tests is similar to that of
 and a property-testing-specific test runner is specified in order to display
 the results of the propertized tests.</p>
 
-<h2 id="issues">Issues</h2>
-
-<p>I wanted to use the <code>test-name</code> attribute in <code>test-assert</code> to store the iteration
-number as a string. But the <code>test-assert</code> macro only evaluates <code>test-name</code> once, so
-I abandoned that idea. The iteration number is made available inside the test
-runner's <code>test-result-alist</code> instead.</p>
-
-<p>Some procedures being tested may accept an eof-object as an argument. But
-generators use eof-object to indicate if they are exhausted. The user might
-naively create an eof-object generator, not knowing that it is equivalent to an
-empty generator. This shouldn't cause an error, but may cause confusion.</p>
-
-<p>
-I would like to propose <code>(scheme property-test)</code> as an R7RS large alias name.
-</p>
-
 <h2 id="rationale">Rationale</h2>
 
 <p>
