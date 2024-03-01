@@ -204,15 +204,19 @@
                  (list (vector-generator-of (integer-generator)))))
 
 (test-group "non-determinism"
-  (let ((lst1 (generator->list (integer-generator) 1001))
-        (lst2 (generator->list (integer-generator) 1001)))
-    (test-assert (not (equal? lst1 lst2)))))
+  (let ((gen1 (gdrop (exact-number-generator) 30)) ;skip the initial sequence
+        (gen2 (gdrop (exact-number-generator) 30)))
+    (test-property (lambda (x y)
+                     (not (= x y)))
+                   (list gen1 gen2))))
 
 (test-group "determinism"
   (parameterize ((current-random-source (make-random-source)))
-    (let ((lst1 (generator->list (boolean-generator) 1001)))
+    (let ((gen1 (gdrop (exact-number-generator) 30)))
       (parameterize ((current-random-source (make-random-source)))
-        (let ((lst2 (generator->list (boolean-generator) 1001)))
-          (test-assert (equal? lst1 lst2)))))))
+        (let ((gen2 (gdrop (exact-number-generator) 30)))
+          (test-property (lambda (x y)
+                           (= x y))
+                         (list gen1 gen2)))))))
 
 (test-end)
