@@ -215,8 +215,6 @@
     (let ((gen1 (gdrop (exact-number-generator) 30)))
       (parameterize ((current-random-source (make-random-source)))
         (let ((gen2 (gdrop (exact-number-generator) 30)))
-          (test-property (lambda (x y)
-                           (= x y))
-                         (list gen1 gen2)))))))
+          (test-property = (list gen1 gen2)))))))
 
 (test-end)
