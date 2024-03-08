@@ -211,7 +211,7 @@
                                  (exact? (imag-part x))
                                  (integer? (real-part x))
                                  (integer? (imag-part x))))
-                          special-numbers)
+                          special-number)
                  (gmap make-rectangular
                        (make-random-integer-generator min-exact max-exact)
                        (make-random-integer-generator min-exact max-exact))))
