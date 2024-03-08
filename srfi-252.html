@@ -62,7 +62,7 @@ testing libraries may also generate inputs that commonly cause incorrect
 behavior, such as <code>0</code> or <code>NaN</code>.
 </p>
 <p>
-Property testing provides a more rigorous alternative to traditional unit
+Property testing offers a more rigorous alternative to traditional unit
 testing. In terms of the learning and effort required for use, it serves as a
 middle ground between unit tests and formal verification methods.
 Properties can be written as stricter specifiers of program behavior than
@@ -233,8 +233,8 @@ all the runs of a property-based test.
 
 <p>
 The generator procedures in this SRFI must be implemented
-using <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>.
-That way, the <code>current-random-source</code> parameter can be configured to
+using <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>,
+such that the <code>current-random-source</code> parameter can be configured to
 facilitate deterministic generation of property test inputs.
 </p>
 
