@@ -31,6 +31,7 @@
           (srfi 158)
           (srfi 194))
   (cond-expand ((library (srfi 143)) (import (srfi 143))) (else))
+  (cond-expand ((library (srfi 144)) (import (srfi 144))) (else))
   (export test-property test-property-expect-fail test-property-skip
           test-property-error test-property-error-type
           property-test-runner
@@ -61,9 +62,21 @@
     ;; high numbers.
     ;; Number of property tests to run by default.
     (define default-runs 100)
-    ;; Maximum absolute value of a number for random generators.
-    (define max-int (cond-expand ((library (srfi 143)) fx-greatest)
-                                 (else (expt 2 24))))
+
+    ;; Value range for exact random generators.
+    (define max-exact (cond-expand ((library (srfi 143)) fx-greatest)
+                                   (else (expt 2 24))))
+    (define min-exact (cond-expand ((library (srfi 143)) fx-least)
+                                   (else (- (expt 2 24)))))
+
+    ;; Value range for inexact random generators.
+    (define max-inexact (cond-expand ((library (srfi 144)) fl-greatest)
+                                     (ieee-float 3.4e38) ;single
+                                     (else max-exact)))
+    (define min-inexact (cond-expand ((library (srfi 144)) fl-least)
+                                     (ieee-float -3.4e38)
+                                     (else min-exact)))
+
     ;; Maximum size for random bytevector/list/string/symbol/vector generators.
     (define max-size 1001)
     ;; Maximum character supported by integer->char.
@@ -73,11 +86,11 @@
     (define special-number
       (append
        ;; Exact integers
-       (cond-expand (gauche '(0 1 -1)) (else '(0 -0 1 -1)))
+       '(0 1 -1)
        ;; Exact ratios
        (cond-expand (ratios '(1/2 -1/2)) (else '()))
        ;; Exact complex
-       (cond-expand (exact-complex '(0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i))
+       (cond-expand (exact-complex '(0+i 0-i 1+i 1-i -1+i -1-i))
                     (else '()))
        ;; Exact complex ratios
        (cond-expand ((and ratios exact-complex)
@@ -116,7 +129,7 @@
     (define (string-generator)
       (gcons* ""
               (gmap (lambda (n)
-                      (generator->string (char-generator) n))
+                      (generator->string (gdrop (char-generator) 1) n))
                     (make-random-integer-generator 1 max-size))))
 
     (define (symbol-generator)
@@ -140,13 +153,13 @@
       (gappend (gfilter (lambda (x)
                           (and (exact? x) (integer? x)))
                         special-number)
-               (make-random-integer-generator (- max-int) max-int)))
+               (make-random-integer-generator min-exact max-exact)))
 
     (define (ratio-gen)
       (gmap /
-            (make-random-integer-generator (- max-int) max-int)
+            (make-random-integer-generator min-exact max-exact)
             (gfilter (lambda (x) (not (zero? x)))
-                     (make-random-integer-generator (- max-int) max-int))))
+                     (make-random-integer-generator min-exact max-exact))))
 
     (define (exact-number-generator)
       ;; Ensure there are no repeated special values, and a random sampling
@@ -158,16 +171,16 @@
          (gsampling (gmap make-rectangular
                           (exact-real-generator) (exact-real-generator))
                     (ratio-gen)
-                    (make-random-integer-generator (- max-int) max-int)))
+                    (make-random-integer-generator min-exact max-exact)))
         (ratios
          (gsampling (ratio-gen)
-                    (make-random-integer-generator (- max-int) max-int)))
+                    (make-random-integer-generator min-exact max-exact)))
         (exact-complex
          (gsampling (gmap make-rectangular
                           (exact-real-generator) (exact-real-generator))
-                    (make-random-integer-generator (- max-int) max-int)))
+                    (make-random-integer-generator min-exact max-exact)))
         (else
-         (make-random-integer-generator (- max-int) max-int)))))
+         (make-random-integer-generator min-exact max-exact)))))
 
     (define (exact-rational-generator)
       (gappend
@@ -176,8 +189,8 @@
                 special-number)
        (cond-expand
         (ratios (gsampling (ratio-gen)
-                           (make-random-integer-generator (- max-int) max-int)))
-        (else (make-random-integer-generator (- max-int) max-int)))))
+                           (make-random-integer-generator min-exact max-exact)))
+        (else (make-random-integer-generator min-exact max-exact)))))
 
     (define (exact-real-generator)
       (gappend
@@ -186,8 +199,8 @@
                 special-number)
        (cond-expand
         (ratios (gsampling (ratio-gen)
-                           (make-random-integer-generator (- max-int) max-int)))
-        (else (make-random-integer-generator (- max-int) max-int)))))
+                           (make-random-integer-generator min-exact max-exact)))
+        (else (make-random-integer-generator min-exact max-exact)))))
 
     (define (exact-integer-complex-generator)
       (cond-expand
@@ -198,10 +211,10 @@
                                  (exact? (imag-part x))
                                  (integer? (real-part x))
                                  (integer? (imag-part x))))
-                          special-numbers)
+                          special-number)
                  (gmap make-rectangular
-                       (make-random-integer-generator (- max-int) max-int)
-                       (make-random-integer-generator (- max-int) max-int))))
+                       (make-random-integer-generator min-exact max-exact)
+                       (make-random-integer-generator min-exact max-exact))))
        (else (error "Exact complex is not supported."))))
 
     ;; Inexact number generators
@@ -212,8 +225,8 @@
                                (inexact? (real-part x))
                                (inexact? (imag-part x))))
                         special-number)
-               (make-random-rectangular-generator (- max-int) max-int
-                                                  (- max-int) max-int)))
+               (make-random-rectangular-generator min-inexact max-inexact
+                                                  min-inexact max-inexact)))
 
     (define (inexact-integer-generator)
       (gmap inexact (exact-integer-generator)))
@@ -221,22 +234,22 @@
     (define (inexact-number-generator)
       (gappend (gfilter inexact? special-number)
                (gsampling (make-random-rectangular-generator
-                           (- max-int) max-int (- max-int) max-int)
-                          (make-random-real-generator (- max-int) max-int))))
+                           min-inexact max-inexact min-inexact max-inexact)
+                          (make-random-real-generator min-inexact max-inexact))))
 
     (define (inexact-rational-generator)
       (gappend (gfilter (lambda (x)
                           (and (rational? x)
                                (inexact? x)))
                         special-number)
-               (make-random-real-generator (- max-int) max-int)))
+               (make-random-real-generator min-inexact max-inexact)))
 
     (define (inexact-real-generator)
       (gappend (gfilter (lambda (x)
                           (and (real? x)
                                (inexact? x)))
                         special-number)
-               (make-random-real-generator (- max-int) max-int)))
+               (make-random-real-generator min-inexact max-inexact)))
 
     ;; Unions of number generators
 

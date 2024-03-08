@@ -36,28 +36,12 @@ generators to generate test inputs, which allows for the creation of custom
 input generators. It uses
 <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>
 as the source of random data, so that the generation of random test inputs can
-be made deterministic. For convenience, it also provides helper procedures to
+be made deterministic. For convenience, it also provides procedures to
 create test input generators for the types specified in R7RS-small. The
 interface to run property tests is similar to that of
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>,
 and a property-testing-specific test runner is specified in order to display
 the results of the propertized tests.</p>
-
-<h2 id="issues">Issues</h2>
-
-<p>I wanted to use the <code>test-name</code> attribute in <code>test-assert</code> to store the iteration
-number as a string. But the <code>test-assert</code> macro only evaluates <code>test-name</code> once, so
-I abandoned that idea. The iteration number is made available inside the test
-runner's <code>test-result-alist</code> instead.</p>
-
-<p>Some procedures being tested may accept an eof-object as an argument. But
-generators use eof-object to indicate if they are exhausted. The user might
-naively create an eof-object generator, not knowing that it is equivalent to an
-empty generator. This shouldn't cause an error, but may cause confusion.</p>
-
-<p>
-I would like to propose <code>(scheme property-test)</code> as an R7RS large alias name.
-</p>
 
 <h2 id="rationale">Rationale</h2>
 
@@ -78,7 +62,7 @@ testing libraries may also generate inputs that commonly cause incorrect
 behavior, such as <code>0</code> or <code>NaN</code>.
 </p>
 <p>
-Property testing provides a more rigorous alternative to traditional unit
+Property testing offers a more rigorous alternative to traditional unit
 testing. In terms of the learning and effort required for use, it serves as a
 middle ground between unit tests and formal verification methods.
 Properties can be written as stricter specifiers of program behavior than
@@ -87,7 +71,7 @@ individual test cases.
 <p>
 Property testing was popularized by the QuickCheck library for Haskell, and has
 since spread to other languages. The following libraries were referenced in the
-creation of this document, in order of influence:
+creation of this document, in order of descending influence:
 </p>
 <p>
 Hypothesis, QuickCheck, Scheme-Check, and QuickCheck for Racket.
@@ -249,8 +233,8 @@ all the runs of a property-based test.
 
 <p>
 The generator procedures in this SRFI must be implemented
-using <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>.
-That way, the <code>current-random-source</code> parameter can be configured to
+using <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>,
+such that the <code>current-random-source</code> parameter can be configured to
 facilitate deterministic generation of property test inputs.
 </p>
 
@@ -314,8 +298,7 @@ uniformly random distribution of characters.
 <dd>
 <p>
 Create an infinite generator that returns strings.
-The generator should return the strings
-<code>""</code> and <code>"\0"</code> first, then a series of strings with
+The generator should return an empty string first, then a series of strings with
 uniformly randomly distributed contents and lengths. The maximum length of the
 generated strings is chosen by the implementation.
 </p>
@@ -323,7 +306,6 @@ generated strings is chosen by the implementation.
 (define string-gen (string-generator))
 
 (string-gen) ; => ""
-(string-gen) ; => "\0"
 (string-gen) ; => "..."
 </pre>
 </dd>
@@ -334,16 +316,24 @@ generated strings is chosen by the implementation.
 <dd>
 <p>
 Create an infinite generator that returns symbols.
+The generator should return the empty symbol <code>||</code> first, then a
+series of randomized symbols.
 </p>
 <pre class="example">
 (define symbol-gen (symbol-generator))
 
+(symbol-gen) ; => ||
 (symbol-gen) ; => 'something
 </pre>
 </dd>
 </dl>
 
 <h3 id="Number-generators" class="subheading">Number generators</h3>
+
+The ranges of the random numbers returned by the numeric generators below are
+defined by the implementation. Applications that require a specific range of
+numeric test inputs are encouraged to create custom generators using
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>.
 
 <dl>
 <dt id="complex_generator"><code>(complex-generator)</code></dt>
@@ -440,7 +430,7 @@ Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>complex?</code> predicates.
 The real and imaginary parts of the complex numbers must be exact.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 1/2 -1/2 0+i 0-i 1+i 1-i -1+i -1-i
 1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i
 </pre>
 <p>first, then a uniformly random distribution
@@ -465,7 +455,7 @@ it is an error to call this procedure.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>integer?</code> predicates.
 The generator should return the sequence
-</p><pre>0 -0 1 -1
+</p><pre>0 1 -1
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -488,7 +478,7 @@ Create an infinite generator that returns objects that fulfill the
 predicates.
 The real and imaginary parts of the complex numbers must be exact integers.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 0+i 0-i 1+i 1-i -1+i -1-i
 </pre>
 <p>
 first, then a uniformly random distribution of exact complex numbers with
@@ -513,7 +503,7 @@ it is an error to call this procedure.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> predicate.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 1/2 -1/2 0+i 0-i 1+i 1-i -1+i -1-i
 1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i
 </pre>
 <p> first, then a uniformly random distribution of exact
@@ -534,7 +524,7 @@ distinguished in the implementation.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>rational?</code> predicates.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2
+</p><pre>0 1 -1 1/2 -1/2
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -555,7 +545,7 @@ distinguished in the implementation.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>real?</code> predicates.
 The generator should return the sequence
-<pre>0 -0 1 -1 1/2 -1/2
+<pre>0 1 -1 1/2 -1/2
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -706,7 +696,7 @@ argument is not specified, the implementation may select the size range.
 (define list-gen (list-generator-of (integer-generator)))
 
 (list-gen) ; => '()
-(list-gen) ; => '(0 -0 1 -1 ...)
+(list-gen) ; => '(0 1 -1 ...)
 </pre>
 </dd>
 </dl>
@@ -780,7 +770,8 @@ A conformant sample implementation is provided. It depends on R7RS-small,
 <a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>,
 <a href="https://srfi.schemers.org/srfi-194/srfi-194.html">SRFI 194</a>,
 and optionally,
-<a href="https://srfi.schemers.org/srfi-143/srfi-143.html">SRFI 143</a>.
+<a href="https://srfi.schemers.org/srfi-143/srfi-143.html">SRFI 143</a> and
+<a href="https://srfi.schemers.org/srfi-144/srfi-144.html">SRFI 144</a>.
 However, there are values in the implementation that may need to be adjusted.
 The size of the generated test inputs, and the number of cases to run, should be
 tuned depending on the performance characteristics of the implementation. These
@@ -803,12 +794,8 @@ or <a href="https://srfi.schemers.org/srfi-252/property-test.sld">directly</a>.
 <h2 id="acknowledgements">Acknowledgements</h2>
 
 <p>
-Thank you to Shiro Kawai for the initial review of the implementation.
-</p>
-
-<p>
-Thank you to Bradley Lucier, John Cowan, Per Bothner, and Marc Nieper-Wißkirchen
-for their input during the drafting process.
+Thank you to Bradley Lucier, John Cowan, Marc Nieper-Wißkirchen, Per Bothner,
+and Shiro Kawai for their input during the drafting process.
 </p>
 
 <h2 id="copyright">Copyright</h2>
