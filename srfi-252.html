@@ -316,10 +316,13 @@ generated strings is chosen by the implementation.
 <dd>
 <p>
 Create an infinite generator that returns symbols.
+The generator should return the empty symbol <code>||</code> first, then a
+series of randomized symbols.
 </p>
 <pre class="example">
 (define symbol-gen (symbol-generator))
 
+(symbol-gen) ; => ||
 (symbol-gen) ; => 'something
 </pre>
 </dd>
