@@ -298,8 +298,7 @@ uniformly random distribution of characters.
 <dd>
 <p>
 Create an infinite generator that returns strings.
-The generator should return the strings
-<code>""</code> and <code>"\0"</code> first, then a series of strings with
+The generator should return an empty string first, then a series of strings with
 uniformly randomly distributed contents and lengths. The maximum length of the
 generated strings is chosen by the implementation.
 </p>
@@ -307,7 +306,6 @@ generated strings is chosen by the implementation.
 (define string-gen (string-generator))
 
 (string-gen) ; => ""
-(string-gen) ; => "\0"
 (string-gen) ; => "..."
 </pre>
 </dd>
