@@ -74,7 +74,7 @@
                                      (ieee-float 3.4e38) ;single
                                      (else max-exact)))
     (define min-inexact (cond-expand ((library (srfi 144)) fl-least)
-                                     (ieee-float 1.18e−38)
+                                     (ieee-float -3.4e38)
                                      (else min-exact)))
 
     ;; Maximum size for random bytevector/list/string/symbol/vector generators.
