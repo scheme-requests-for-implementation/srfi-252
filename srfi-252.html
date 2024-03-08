@@ -327,6 +327,11 @@ Create an infinite generator that returns symbols.
 
 <h3 id="Number-generators" class="subheading">Number generators</h3>
 
+The ranges of random numbers returned by the numeric generators below is
+implementation-defined. Applications that require a specific range of numeric
+test inputs are encouraged to create custom generators using
+<a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a>.
+
 <dl>
 <dt id="complex_generator"><code>(complex-generator)</code></dt>
 <dd>
