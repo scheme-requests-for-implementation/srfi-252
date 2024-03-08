@@ -427,7 +427,7 @@ Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>complex?</code> predicates.
 The real and imaginary parts of the complex numbers must be exact.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 1/2 -1/2 0+i 0-i 1+i 1-i -1+i -1-i
 1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i
 </pre>
 <p>first, then a uniformly random distribution
@@ -452,7 +452,7 @@ it is an error to call this procedure.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>integer?</code> predicates.
 The generator should return the sequence
-</p><pre>0 -0 1 -1
+</p><pre>0 1 -1
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -475,7 +475,7 @@ Create an infinite generator that returns objects that fulfill the
 predicates.
 The real and imaginary parts of the complex numbers must be exact integers.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 0+i 0-i 1+i 1-i -1+i -1-i
 </pre>
 <p>
 first, then a uniformly random distribution of exact complex numbers with
@@ -500,7 +500,7 @@ it is an error to call this procedure.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> predicate.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2 0+i 0-i -0+i -0-i 1+i 1-i -1+i -1-i
+</p><pre>0 1 -1 1/2 -1/2 0+i 0-i 1+i 1-i -1+i -1-i
 1/2+1/2i 1/2-1/2i -1/2+1/2i -1/2-1/2i
 </pre>
 <p> first, then a uniformly random distribution of exact
@@ -521,7 +521,7 @@ distinguished in the implementation.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>rational?</code> predicates.
 The generator should return the sequence
-</p><pre>0 -0 1 -1 1/2 -1/2
+</p><pre>0 1 -1 1/2 -1/2
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -542,7 +542,7 @@ distinguished in the implementation.
 Create an infinite generator that returns objects that fulfill the
 <code>exact?</code> and <code>real?</code> predicates.
 The generator should return the sequence
-<pre>0 -0 1 -1 1/2 -1/2
+<pre>0 1 -1 1/2 -1/2
 </pre>
 <p>
 first, then a uniformly random distribution of exact
@@ -693,7 +693,7 @@ argument is not specified, the implementation may select the size range.
 (define list-gen (list-generator-of (integer-generator)))
 
 (list-gen) ; => '()
-(list-gen) ; => '(0 -0 1 -1 ...)
+(list-gen) ; => '(0 1 -1 ...)
 </pre>
 </dd>
 </dl>
