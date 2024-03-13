@@ -134,8 +134,8 @@ generated inputs. If not provided, the implementation may choose how many
 times to run the test.
 </p>
 <p>
-The generators in <code>generator-list</code> must be infinite. It is an error
-for any of the generators to be exhausted.
+It is an error if any generator in <code>generator-list</code> is exhausted
+before the specified number of <code>runs</code> are completed.
 </p>
 <pre class="example">
 (define (my-square z) (* z z))
