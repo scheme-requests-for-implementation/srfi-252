@@ -27,12 +27,11 @@
         (scheme read)
         (srfi 1)
         (srfi 27)
-        (srfi 36)
-        (srfi 39)
         (srfi 64)
         (srfi 158)
         (srfi 194)
         (property-test))
+(cond-expand ((library (srfi 36)) (import (srfi 36))) (else))
 
 (test-begin "property-test")
 
@@ -65,9 +64,12 @@
   (test-property-error error-three-property (list (integer-generator)))
   (test-property-error error-three-property (list (integer-generator)) 10))
 
-(test-group "test-property-error-type"
-  (test-property-error-type &read-error make-read-error-property
-                            (list (string-generator))))
+(cond-expand
+ ((library (srfi 36))
+  (test-group "test-property-error-type"
+              (test-property-error-type &read-error make-read-error-property
+                                        (list (string-generator)))))
+ (else))
 
 (test-group "test-property/with-2-arguments"
   (test-property (lambda (x y)

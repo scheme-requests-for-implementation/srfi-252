@@ -134,8 +134,8 @@ generated inputs. If not provided, the implementation may choose how many
 times to run the test.
 </p>
 <p>
-The generators in <code>generator-list</code> must be infinite. It is an error
-for any of the generators to be exhausted.
+It is an error if any generator in <code>generator-list</code> is exhausted
+before the specified number of <code>runs</code> are completed.
 </p>
 <pre class="example">
 (define (my-square z) (* z z))
@@ -780,17 +780,31 @@ tunable values are denoted by comments in the code.
 </p>
 
 <p>
+The sample implementation does not perform test case reduction, also known as
+shrinking. Other implementations may choose to do so.
+</p>
+
+<p>
 The <code>property-test-runner</code> provided by the sample implementation is
 the same as the <code>test-runner-simple</code> from
 <a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>.
 However, implementations should define a property-testing-specific runner that
 displays results in a well-organized fashion.
+</p>
 
 <p>
 The sample implementation is available
 <a href="https://github.com/scheme-requests-for-implementation/srfi-252">in
 the repo</a>
 or <a href="https://srfi.schemers.org/srfi-252/property-test.sld">directly</a>.
+</p>
+
+<p>
+A test suite for implementations is available
+<a href="https://github.com/scheme-requests-for-implementation/srfi-252/blob/master/property-test-tests.scm">
+in the repo</a>
+or <a href="https://srfi.schemers.org/srfi-252/property-test-tests.scm">directly</a>.
+</p>
 
 <h2 id="acknowledgements">Acknowledgements</h2>
 
