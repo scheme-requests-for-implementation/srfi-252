@@ -105,7 +105,11 @@ This document uses the short name in order to have shorter identifiers.
 
 <h2 id="specification">Specification</h2>
 
-<h3 id="Testing-procedures" class="subheading">Testing procedures</h3>
+<h3 id="Testing-forms" class="subheading">Testing forms</h3>
+
+<p>
+The following procedure-like forms may be implemented as procedures or macros.
+</p>
 
 <p>
 It is an error to invoke the testing procedures if there is no current test
@@ -138,12 +142,19 @@ times to run the test.
 It is an error if any generator in <code>generator-list</code> is exhausted
 before the specified number of <code>runs</code> is completed.
 </p>
+<p>
+Property tests can be named by placing them inside an
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>
+test group.
+</p>
 <pre class="example">
 (define (my-square z) (* z z))
 (define (my-square-property z) (= (sqrt (my-square z)) z))
 
 ;; Test the property ten times.
+(test-begin "my-square-prop-test")
 (test-property my-square-property (list (integer-generator)) 10)
+(test-end "my-square-prop-test")
 </pre>
 </dd>
 </dl>
@@ -476,8 +487,7 @@ distinguished in the implementation.
 <dd>
 <p>
 Create an infinite generator that returns objects that fulfill the
-<code>exact?</code>, <code>integer?</code>, and <code>complex?</code>
-predicates.
+<code>exact?</code> and <code>complex?</code> predicates.
 The real and imaginary parts of the complex numbers must be exact integers.
 The generator should return the sequence
 </p><pre>0 1 -1 0+i 0-i 1+i 1-i -1+i -1-i
