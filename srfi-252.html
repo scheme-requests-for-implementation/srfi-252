@@ -152,7 +152,9 @@ test group.
 (define (my-square-property z) (= (sqrt (my-square z)) z))
 
 ;; Test the property ten times.
+(test-begin "my-square-prop-test")
 (test-property my-square-property (list (integer-generator)) 10)
+(test-end "my-square-prop-test")
 </pre>
 </dd>
 </dl>
