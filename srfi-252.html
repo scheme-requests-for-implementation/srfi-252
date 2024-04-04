@@ -142,6 +142,11 @@ times to run the test.
 It is an error if any generator in <code>generator-list</code> is exhausted
 before the specified number of <code>runs</code> is completed.
 </p>
+<p>
+Property tests can be named by placing them inside an
+<a href="https://srfi.schemers.org/srfi-64/srfi-64.html">SRFI 64</a>
+test group.
+</p>
 <pre class="example">
 (define (my-square z) (* z z))
 (define (my-square-property z) (= (sqrt (my-square z)) z))
