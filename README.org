@@ -11,7 +11,7 @@ keywords: [[https://srfi.schemers.org/?keywords=testing][Testing]]
 
 This repository hosts [[https://srfi.schemers.org/srfi-252/][SRFI 252]]: Property Testing, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
-This SRFI is in /draft/ status.
+This SRFI is in /final/ status.
 See also [[/srfi-64/][SRFI 64: A Scheme API for test suites]], [[/srfi-158/][SRFI 158: Generators and Accumulators]], and [[/srfi-194/][SRFI 194: Random data generators]].
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-252/srfi-252.html][SRFI Document]].
 
