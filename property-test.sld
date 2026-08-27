@@ -143,7 +143,7 @@
                                         (and (complex? x)
                                              (exact? (real-part x))
                                              (exact? (imag-part x))))
-                                      special-number)
+                                      (list->generator special-number))
                              (gmap make-rectangular
                                    (exact-real-generator)
                                    (exact-real-generator))))
@@ -152,7 +152,7 @@
     (define (exact-integer-generator)
       (gappend (gfilter (lambda (x)
                           (and (exact? x) (integer? x)))
-                        special-number)
+                        (list->generator special-number))
                (make-random-integer-generator min-exact max-exact)))
 
     (define (ratio-gen)
@@ -165,7 +165,7 @@
       ;; Ensure there are no repeated special values, and a random sampling
       ;; between exact ratios, complex, and integers.
       (gappend
-       (gfilter exact? special-number)
+       (gfilter exact? (list->generator special-number))
        (cond-expand
         ((and ratios exact-complex)
          (gsampling (gmap make-rectangular
@@ -186,7 +186,7 @@
       (gappend
        (gfilter (lambda (x)
                   (and (rational? x) (exact? x)))
-                special-number)
+                (list->generator special-number))
        (cond-expand
         (ratios (gsampling (ratio-gen)
                            (make-random-integer-generator min-exact max-exact)))
@@ -196,7 +196,7 @@
       (gappend
        (gfilter (lambda (x)
                   (and (real? x) (exact? x)))
-                special-number)
+                (list->generator special-number))
        (cond-expand
         (ratios (gsampling (ratio-gen)
                            (make-random-integer-generator min-exact max-exact)))
@@ -211,7 +211,7 @@
                                  (exact? (imag-part x))
                                  (integer? (real-part x))
                                  (integer? (imag-part x))))
-                          special-number)
+                          (list->generator special-number))
                  (gmap make-rectangular
                        (make-random-integer-generator min-exact max-exact)
                        (make-random-integer-generator min-exact max-exact))))
@@ -224,7 +224,7 @@
                           (and (complex? x)
                                (inexact? (real-part x))
                                (inexact? (imag-part x))))
-                        special-number)
+                        (list->generator special-number))
                (make-random-rectangular-generator min-inexact max-inexact
                                                   min-inexact max-inexact)))
 
@@ -232,7 +232,7 @@
       (gmap inexact (exact-integer-generator)))
 
     (define (inexact-number-generator)
-      (gappend (gfilter inexact? special-number)
+      (gappend (gfilter inexact? (list->generator special-number))
                (gsampling (make-random-rectangular-generator
                            min-inexact max-inexact min-inexact max-inexact)
                           (make-random-real-generator min-inexact max-inexact))))
@@ -241,14 +241,14 @@
       (gappend (gfilter (lambda (x)
                           (and (rational? x)
                                (inexact? x)))
-                        special-number)
+                        (list->generator special-number))
                (make-random-real-generator min-inexact max-inexact)))
 
     (define (inexact-real-generator)
       (gappend (gfilter (lambda (x)
                           (and (real? x)
                                (inexact? x)))
-                        special-number)
+                        (list->generator special-number))
                (make-random-real-generator min-inexact max-inexact)))
 
     ;; Unions of number generators
